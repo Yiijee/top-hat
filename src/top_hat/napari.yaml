@@ -30,6 +30,9 @@ contributions:
     - id: top-hat.make_qwidget
       python_name: top_hat:ExampleQWidget
       title: Make example QWidget
+    - id: top-hat.PointSelectorWidget
+      python_name: top_hat._widget:PointSelectorWidget
+      title: Point Selector Widget
   readers:
     - command: top-hat.get_reader
       accepts_directories: false
@@ -55,3 +58,6 @@ contributions:
       display_name: Autogenerate Threshold
     - command: top-hat.make_qwidget
       display_name: Example QWidget
+    - command: top-hat.PointSelectorWidget
+      display_name: Point Selector
+     

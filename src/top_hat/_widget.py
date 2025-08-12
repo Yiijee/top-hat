@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING
 
 from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
-from qtpy.QtWidgets import QHBoxLayout, QPushButton, QWidget, QVBoxLayout, QLabel
+from qtpy.QtWidgets import QHBoxLayout, QPushButton, QInputDialog, QWidget, QVBoxLayout, QLabel
 from skimage.util import img_as_float
 
 if TYPE_CHECKING:
@@ -135,30 +135,52 @@ class PointSelectorWidget(QWidget):
         super().__init__()
         self.viewer = viewer
 
-        # Set up the widget's vertical layout and add a label to display instructions or selected
-        self.setLayout(QVBoxLayout())  # Set the widget layout to arrange child widgets vertically
-        self.info_label = QLabel("Select points in the viewer to record (x, y, z) coordinates.") # Label to display selected points
-        self.layout().addWidget(self.info_label) # Add this label to the layout
+        self.setLayout(QVBoxLayout())
+        self.info_label = QLabel("Select points in the viewer to record (x, y, z) coordinates.")
+        self.layout().addWidget(self.info_label)
 
-        # Add a Points layer for selection
         self.points_layer = viewer.add_points(name="Selected Points", ndim=3)
-
-        # Connect to the points layer event
         self.points_layer.events.data.connect(self.on_points_added)
 
+        # Add button to get cluster centroid
+        self.centroid_btn = QPushButton("Get Cluster Centroid")
+        self.centroid_btn.clicked.connect(self.get_cluster_centroid)
+        self.layout().addWidget(self.centroid_btn)
+
     def on_points_added(self, event):
-        # Get all points' coordinates and show the No.
         coords = self.points_layer.data
-        # (*optional*) show the cooridinates of point as [x,y,z] rather than [z,y,x]:
-        # coords = coords[:,::-1]
         labels = [str(i+1) for i in range(len(coords))]
         self.points_layer.text = {'string': labels, 'size': 12, 'color': 'red'}
-        # Format the coordinates into a string for display in the layout
         info = "\n".join([
             f"{label}: {tuple(float(c) for c in coord)}"
             for label, coord in zip(labels, coords)
         ])
         self.info_label.setText(f"Selected points:\n{info}")
+
+    def get_cluster_centroid(self):
+        coords = self.points_layer.data
+        if len(coords) == 0:
+            self.info_label.setText("No points selected.")
+            return
+
+        # Pop-up window for user to input indices (e.g., "1,2,3")
+        indices_str, ok = QInputDialog.getText(self, "Input Point Indices",
+                                               "Enter point indices (e.g., 1,2,3) used for calculating the cell cluster centroid:")
+        if not ok or not indices_str.strip():
+            return
+
+        try:
+            # Convert input string to list of indices (1-based to 0-based)
+            indices = [int(i.strip()) - 1 for i in indices_str.split(",") if i.strip()]
+            selected_coords = coords[indices]
+            centroid = selected_coords.mean(axis=0)
+            centroid_tuple = tuple(float(c) for c in centroid)
+            self.info_label.setText(
+                f"Selected points:\n{self.info_label.text().split('Selected points:\n')[-1]}\n"
+                f"Centroid of points {indices_str}: {centroid_tuple}"
+            )
+        except Exception as e:
+            self.info_label.setText(f"Error: {e}")
 
 
 

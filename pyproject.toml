@@ -33,6 +33,9 @@ dependencies = [
     "magicgui",
     "qtpy",
     "scikit-image",
+    "pynrrd",
+    "pandas",
+    "tifffile",
 ]
 
 [project.optional-dependencies]

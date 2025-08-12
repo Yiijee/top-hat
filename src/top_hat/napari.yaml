@@ -1,0 +1,57 @@
+name: top-hat
+display_name: Top HAT
+# use 'hidden' to remove plugin from napari hub search results
+visibility: public
+# see https://napari.org/stable/plugins/technical_references/manifest.html#fields for valid categories
+# categories: []
+contributions:
+  commands:
+    - id: top-hat.get_reader
+      python_name: top_hat._reader:napari_get_reader
+      title: Open data with Top HAT
+    - id: top-hat.write_multiple
+      python_name: top_hat._writer:write_multiple
+      title: Save multi-layer data with Top HAT
+    - id: top-hat.write_single_image
+      python_name: top_hat._writer:write_single_image
+      title: Save image data with Top HAT
+    - id: top-hat.make_sample_data
+      python_name: top_hat._sample_data:make_sample_data
+      title: Load sample data from Top HAT
+    - id: top-hat.make_container_widget
+      python_name: top_hat:ImageThreshold
+      title: Make threshold Container widget
+    - id: top-hat.make_magic_widget
+      python_name: top_hat:threshold_magic_widget
+      title: Make threshold magic widget
+    - id: top-hat.make_function_widget
+      python_name: top_hat:threshold_autogenerate_widget
+      title: Make threshold function widget
+    - id: top-hat.make_qwidget
+      python_name: top_hat:ExampleQWidget
+      title: Make example QWidget
+  readers:
+    - command: top-hat.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.npy']
+  writers:
+    - command: top-hat.write_multiple
+      layer_types: ['image*','labels*']
+      filename_extensions: []
+    - command: top-hat.write_single_image
+      layer_types: ['image']
+      filename_extensions: ['.npy']
+  sample_data:
+    - command: top-hat.make_sample_data
+      display_name: Top HAT
+      key: unique_id.1
+  widgets:
+    - command: top-hat.make_container_widget
+      display_name: Container Threshold
+    - command: top-hat.make_magic_widget
+      display_name: Magic Threshold
+    - command: top-hat.make_function_widget
+      autogenerate: true
+      display_name: Autogenerate Threshold
+    - command: top-hat.make_qwidget
+      display_name: Example QWidget

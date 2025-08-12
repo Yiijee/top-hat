@@ -147,9 +147,15 @@ class PointSelectorWidget(QWidget):
         self.points_layer.events.data.connect(self.on_points_added)
 
     def on_points_added(self, event):
-        # Get all points' coordinates
+        # Get all points' coordinates and show the No.
         coords = self.points_layer.data
-        self.info_label.setText(f"Selected points: {coords}")
+        # (*optional*) show the cooridinates of point as [x,y,z] rather than [z,y,x]:
+        # coords = coords[:,::-1]
+        labels = [str(i+1) for i in range(len(coords))]
+        self.points_layer.text = {'string': labels, 'size': 12, 'color': 'red'}
+        # Format the coordinates into a string for display in the layout
+        info = "\n".join([f"{label}: {tuple(coord)}" for label, coord in zip(labels, coords)])
+        self.info_label.setText(f"Selected points:\n{info}")
 
 
 

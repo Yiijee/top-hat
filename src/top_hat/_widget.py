@@ -154,7 +154,10 @@ class PointSelectorWidget(QWidget):
         labels = [str(i+1) for i in range(len(coords))]
         self.points_layer.text = {'string': labels, 'size': 12, 'color': 'red'}
         # Format the coordinates into a string for display in the layout
-        info = "\n".join([f"{label}: {tuple(coord)}" for label, coord in zip(labels, coords)])
+        info = "\n".join([
+            f"{label}: {tuple(float(c) for c in coord)}"
+            for label, coord in zip(labels, coords)
+        ])
         self.info_label.setText(f"Selected points:\n{info}")
 
 

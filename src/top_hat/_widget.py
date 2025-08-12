@@ -163,15 +163,24 @@ class PointSelectorWidget(QWidget):
             self.info_label.setText("No points selected.")
             return
 
-        # Pop-up window for user to input indices (e.g., "1,2,3")
-        indices_str, ok = QInputDialog.getText(self, "Input Point Indices",
-                                               "Enter point indices (e.g., 1,2,3) used for calculating the cell cluster centroid:")
+        indices_str, ok = QInputDialog.getText(
+            self,
+            "Input Point Indices",
+            "Enter point indices (e.g., 1,2,3 or 1-5) used for calculating the cell cluster centroid:"
+        )
         if not ok or not indices_str.strip():
             return
 
         try:
-            # Convert input string to list of indices (1-based to 0-based)
-            indices = [int(i.strip()) - 1 for i in indices_str.split(",") if i.strip()]
+            # support comma-separated and range inputs
+            indices = []
+            for part in indices_str.split(","):
+                part = part.strip()
+                if "-" in part:
+                    start, end = map(int, part.split("-"))
+                    indices.extend(range(start - 1, end))  # 1-based to 0-based
+                elif part:
+                    indices.append(int(part) - 1)
             selected_coords = coords[indices]
             centroid = selected_coords.mean(axis=0)
             centroid_tuple = tuple(float(c) for c in centroid)

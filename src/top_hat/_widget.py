@@ -136,7 +136,7 @@ class PointSelectorWidget(QWidget):
         self.viewer = viewer
 
         self.setLayout(QVBoxLayout())
-        self.info_label = QLabel("Select points in the viewer to record (x, y, z) coordinates.")
+        self.info_label = QLabel("Select points in the viewer to record (x, y, z) coordinates (µm)")
         self.layout().addWidget(self.info_label)
 
         self.points_layer = viewer.add_points(name="Selected Points", ndim=3)
@@ -151,11 +151,12 @@ class PointSelectorWidget(QWidget):
         coords = self.points_layer.data
         labels = [str(i+1) for i in range(len(coords))]
         self.points_layer.text = {'string': labels, 'size': 12, 'color': 'red'}
+        # Convert voxel coordinates to microns
         info = "\n".join([
-            f"{label}: {tuple(float(c) for c in coord)}"
+            f"{label}: {tuple(float(c) * 0.38 for c in coord)}"
             for label, coord in zip(labels, coords)
         ])
-        self.info_label.setText(f"Selected points:\n{info}")
+        self.info_label.setText(f"Selected points (µm):\n{info}")
 
     def get_cluster_centroid(self):
         coords = self.points_layer.data
@@ -178,15 +179,15 @@ class PointSelectorWidget(QWidget):
                 part = part.strip()
                 if "-" in part:
                     start, end = map(int, part.split("-"))
-                    indices.extend(range(start - 1, end))  # 1-based to 0-based
+                    indices.extend(range(start - 1, end))
                 elif part:
                     indices.append(int(part) - 1)
             selected_coords = coords[indices]
             centroid = selected_coords.mean(axis=0)
-            centroid_tuple = tuple(float(c) for c in centroid)
+            centroid_tuple = tuple(float(c) * 0.38 for c in centroid)  # Convert to microns
             self.info_label.setText(
-                f"Selected points:\n{self.info_label.text().split('Selected points:\n')[-1]}\n"
-                f"Centroid of points {indices_str}: {centroid_tuple}"
+                f"Selected points (µm):\n{self.info_label.text().split('Selected points:\n')[-1]}\n"
+                f"Centroid of points {indices_str} (µm): {centroid_tuple}"
             )
         except Exception as e:
             self.info_label.setText(f"Error: {e}")

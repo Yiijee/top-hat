@@ -33,11 +33,12 @@ from typing import TYPE_CHECKING
 
 from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
-from qtpy.QtWidgets import QHBoxLayout, QPushButton, QWidget
+from qtpy.QtWidgets import QHBoxLayout, QPushButton, QWidget, QVBoxLayout, QLabel
 from skimage.util import img_as_float
 
 if TYPE_CHECKING:
     import napari
+from napari.layers import Points
 
 
 # Uses the `autogenerate: true` flag in the plugin manifest
@@ -119,7 +120,7 @@ class ExampleQWidget(QWidget):
         super().__init__()
         self.viewer = viewer
 
-        btn = QPushButton("Don't Click me!")
+        btn = QPushButton("Click me!")
         btn.clicked.connect(self._on_click)
 
         self.setLayout(QHBoxLayout())
@@ -127,3 +128,28 @@ class ExampleQWidget(QWidget):
 
     def _on_click(self):
         print("napari has", len(self.viewer.layers), "layers")
+
+
+class PointSelectorWidget(QWidget):
+    def __init__(self, viewer: "napari.viewer.Viewer"):
+        super().__init__()
+        self.viewer = viewer
+
+        # Set up the widget's vertical layout and add a label to display instructions or selected
+        self.setLayout(QVBoxLayout())  # Set the widget layout to arrange child widgets vertically
+        self.info_label = QLabel("Select points in the viewer to record (x, y, z) coordinates.") # Label to display selected points
+        self.layout().addWidget(self.info_label) # Add this label to the layout
+
+        # Add a Points layer for selection
+        self.points_layer = viewer.add_points(name="Selected Points", ndim=3)
+
+        # Connect to the points layer event
+        self.points_layer.events.data.connect(self.on_points_added)
+
+    def on_points_added(self, event):
+        # Get all points' coordinates
+        coords = self.points_layer.data
+        self.info_label.setText(f"Selected points: {coords}")
+
+
+

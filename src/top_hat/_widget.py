@@ -119,7 +119,7 @@ class ExampleQWidget(QWidget):
         super().__init__()
         self.viewer = viewer
 
-        btn = QPushButton("Click me!")
+        btn = QPushButton("Don't Click me!")
         btn.clicked.connect(self._on_click)
 
         self.setLayout(QHBoxLayout())

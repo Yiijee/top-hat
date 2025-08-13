@@ -74,7 +74,7 @@ def reader_function(path):
 
     # optional kwargs for the corresponding viewer.add_* method
     add_kwargs = {
-        "name": "test",
+        "name": "query_image",
         "axis_labels": ("x", "y", "z"),
         "scale": (0.38, 0.38, 0.38),
         "units": ("micron", "micron", "micron"),

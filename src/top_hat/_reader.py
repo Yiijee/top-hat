@@ -63,13 +63,14 @@ def reader_function(path):
     if path.endswith(".nrrd"):
         data, header = nrrd.read(path)
         data = np.array(data)
+        data = np.transpose(data, (2, 1, 0))
     else:  # .tiff or .tif
         data = tifffile.imread(path)
 
     # check the dimensions
-    if data.shape != (1652, 773, 456):
+    if data.shape != (456, 773, 1652):
         raise ValueError(
-            f"Data shape {data.shape} does not match expected shape (1652, 773, 456)"
+            f"Data shape {data.shape} does not match expected shape (456, 773, 1652)"
         )
 
     # optional kwargs for the corresponding viewer.add_* method

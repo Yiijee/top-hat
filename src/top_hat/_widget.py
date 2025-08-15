@@ -140,7 +140,7 @@ class PointSelectorWidget(QWidget):
         self.viewer = viewer
 
         self.setLayout(QVBoxLayout())
-        self.info_label = QLabel("Select points in the viewer to record (x, y, z) coordinates.")
+        self.info_label = QLabel("Select points in the viewer to record (z, y, x) coordinates.")
         self.layout().addWidget(self.info_label)
 
         self.points_layer = viewer.add_points(name="Selected Points", ndim=3)
@@ -210,6 +210,40 @@ class PointSelectorWidget(QWidget):
         except Exception as e:
             self.info_label.setText(f"Error: {e}")
             return None
+
+    def find_matching_hemilineages(user_centroid, csv_path):
+        """
+        Given a user-selected centroid (x, y, z) and a CSV file containing
+        hemilineage centroids and 3*RMSE, return a sorted list of hemilineages
+        whose centroid spheres (radius=3*RMSE) contain the user centroid.
+
+        Args:
+            user_centroid (tuple): (x, y, z) coordinates of the user-selected centroid.
+            csv_path (str): Absolute path to the CSV file.
+
+        Returns:
+            pd.DataFrame: DataFrame with columns ['hemilineage', 'distance', 'centroid_x', 'centroid_y', 'centroid_z', '3*RMSE'],
+                        sorted by 'distance' ascending.
+        """
+ 
+        # Load hemilineage data
+        df = pd.read_csv(csv_path)
+        # Ensure columns: hemilineage, centroid_x, centroid_y, centroid_z, 3*RMSE
+        required_cols = {'hemilineage', 'centroid_x', 'centroid_y', 'centroid_z', '3*RMSE'}
+        if not required_cols.issubset(df.columns):
+            raise ValueError(f"CSV must contain columns: {required_cols}")
+
+        # Compute distances from user_centroid to each hemilineage centroid
+        hemilineage_coords = df[['centroid_x', 'centroid_y', 'centroid_z']].values
+        user_coords = np.array(user_centroid)
+        distances = np.linalg.norm(hemilineage_coords - user_coords, axis=1)
+        df['distance'] = distances
+
+        matches = df[df['distance'] <= df['3*RMSE']].copy()
+        matches = matches.sort_values('distance')
+
+        hemilineage_names = matches['hemilineage'].tolist()
+        return {'user_centroid': tuple(float(c) for c in user_centroid), 'hemilineages': hemilineage_names}
 
 
 

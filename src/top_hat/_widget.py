@@ -205,7 +205,7 @@ class PointSelectorWidget(QWidget):
             if centroid_tuple is None:
                 self.info_label.setText("No valid points for centroid.")
                 return None
-            self.last_centroid = centroid_tuple  # 保存质心
+            self.last_centroid = centroid_tuple  
             self.info_label.setText(
                 f"Selected points:\n{self.info_label.text().split('Selected points:\n')[-1]}\n"
                 f"Centroid of points {indices_str}: {centroid_tuple}"
@@ -226,6 +226,7 @@ class PointSelectorWidget(QWidget):
         if user_centroid is None:
             self.info_label.setText("Please calculate a centroid first.")
             return
+        user_centroid = self.last_centroid[::-1]
         result = self.find_matching_hemilineages(user_centroid, csv_path)
         hemis = result['hemilineages']
         hemi_str = "\n".join(hemis) if hemis else "No matched hemilineages."

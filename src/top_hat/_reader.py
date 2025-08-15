@@ -6,7 +6,9 @@ implement multiple readers or even other plugin contributions. see:
 https://napari.org/stable/plugins/building_a_plugin/guides.html#readers
 """
 
+import nrrd
 import numpy as np
+import tifffile
 
 
 def napari_get_reader(path):
@@ -23,14 +25,12 @@ def napari_get_reader(path):
         If the path is a recognized format, return a function that accepts the
         same path or list of paths, and returns a list of layer data tuples.
     """
-    if isinstance(path, list):
-        # reader plugins may be handed single path, or a list of paths.
-        # if it is a list, it is assumed to be an image stack...
-        # so we are only going to look at the first file.
-        path = path[0]
+    if not isinstance(path, str):
+        # handle single path only
+        return None
 
-    # if we know we cannot read the file, we immediately return None.
-    if not path.endswith(".npy"):
+    # If we know we cannot read the file, we immediately return None.
+    if not path.endswith((".nrrd", ".tiff", ".tif")):
         return None
 
     # otherwise we return the *function* that can read ``path``.
@@ -59,15 +59,27 @@ def reader_function(path):
         layer. Both "meta", and "layer_type" are optional. napari will
         default to layer_type=="image" if not provided
     """
-    # handle both a string and a list of strings
-    paths = [path] if isinstance(path, str) else path
-    # load all files into array
-    arrays = [np.load(_path) for _path in paths]
-    # stack arrays into single array
-    data = np.squeeze(np.stack(arrays))
+    # Read the file
+    if path.endswith(".nrrd"):
+        data, header = nrrd.read(path)
+        data = np.array(data)
+        data = np.transpose(data, (2, 1, 0))
+    else:  # .tiff or .tif
+        data = tifffile.imread(path)
+
+    # check the dimensions
+    if data.shape != (456, 773, 1652):
+        raise ValueError(
+            f"Data shape {data.shape} does not match expected shape (456, 773, 1652)"
+        )
 
     # optional kwargs for the corresponding viewer.add_* method
-    add_kwargs = {}
+    add_kwargs = {
+        "name": "query_image",
+        "axis_labels": ("x", "y", "z"),
+        "scale": (0.38, 0.38, 0.38),
+        "units": ("micron", "micron", "micron"),
+    }
 
     layer_type = "image"  # optional, default is "image"
     return [(data, add_kwargs, layer_type)]

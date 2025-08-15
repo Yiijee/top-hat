@@ -23,6 +23,16 @@ and review the napari docs for plugin developers:
 https://napari.org/stable/plugins/index.html
 -->
 
+## Developing in progress
+
+- [x] nrrd reader: need to reinstall the package using `pip install -e ".[all]"`
+    - you can directly drag and drop nrrd image now.
+- [x] clicking events detecting
+- [x] connect to HAT database: try hat viewer
+- [ ] image thresholding
+
+
+
 ## Installation
 
 You can install `top-hat` via [pip]:

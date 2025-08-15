@@ -36,7 +36,7 @@ contributions:
   readers:
     - command: top-hat.get_reader
       accepts_directories: false
-      filename_patterns: ['*.npy']
+      filename_patterns: ['*.nrrd', '*.tiff', '*.tif']
   writers:
     - command: top-hat.write_multiple
       layer_types: ['image*','labels*']

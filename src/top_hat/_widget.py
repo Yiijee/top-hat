@@ -36,6 +36,10 @@ from magicgui.widgets import CheckBox, Container, create_widget
 from qtpy.QtWidgets import QHBoxLayout, QPushButton, QInputDialog, QWidget, QVBoxLayout, QLabel
 from skimage.util import img_as_float
 
+from .utils.colors import generate_random_hex_color
+from .utils.data_loaders import FAFB_loader
+from .utils.plotter import plot_tracts_placeholder
+
 if TYPE_CHECKING:
     import napari
 from napari.layers import Points

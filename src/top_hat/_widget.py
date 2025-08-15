@@ -296,8 +296,8 @@ class HatViewer(QWidget):
                     "colormap": generate_random_hex_color(),
                     "scale": (0.38, 0.38, 0.38),
                     "units": ("micron", "micron", "micron"),
+                    "metadata": {"hemilineage": hemilineage_name},
                 }
-                # new_layer = self.viewer.add_labels(data, **layer_kwargs)
                 new_layer = self.viewer.add_image(data, **layer_kwargs)
                 self.added_layers.append(new_layer)
 
@@ -320,19 +320,24 @@ class HatViewer(QWidget):
 
         # Open a file dialog to get the save path
         save_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Tracts Plot", "", "Text Files (*.txt);;All Files (*)"
+            self,
+            "Save Tracts Plot",
+            "",
+            "Image Files (*.png);;PDF Files (*.pdf);;All Files (*)",
         )
         if not save_path:
             return
 
         # Gather info about active layers
-        active_hemilineages = []
+        active_hemilineages = {}
         for layer in self.added_layers:
             if layer in self.viewer.layers:
-                active_hemilineages.append(
-                    {"name": layer.name, "color": layer.color}
+                active_hemilineages[layer.metadata["hemilineage"]] = (
+                    layer.colormap.name
                 )
 
         # Call the placeholder function
-        plot_tracts_placeholder(active_hemilineages, save_path)
-        show_info(f"Plotting info saved to {save_path}")
+        plot_tracts_placeholder(
+            active_hemilineages, save_path, self.loader, progress
+        )
+        show_info(f"Plotting saved to {save_path}")

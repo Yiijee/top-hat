@@ -88,6 +88,18 @@ class FAFB_loader:
         print(f"All required files found in {self.fafb_root}.")
         return True
 
+    def get_JRC2018U_mesh(self) -> any:
+        """
+        Get the JRC2018U mesh data for plotting
+        """
+        JRC2018U_path = self.fafb_root / "flybrains.JRC2018U.mesh.pkl"
+        if not JRC2018U_path.exists():
+            raise FileNotFoundError(
+                f"Dataset is not complete, missing {JRC2018U_path}"
+            )
+        with open(JRC2018U_path, "rb") as f:
+            return pickle.load(f)
+
     def get_hemilineage_list(self) -> list[str]:
         """
         Get the list of available hemilineages.

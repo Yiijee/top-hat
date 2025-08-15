@@ -28,7 +28,7 @@ https://napari.org/stable/plugins/index.html
 - [x] nrrd reader: need to reinstall the package using `pip install -e ".[all]"`
     - you can directly drag and drop nrrd image now.
 - [x] clicking events detecting
-- [ ] connect to HAT database
+- [x] connect to HAT database: try hat viewer
 - [ ] image thresholding
 
 

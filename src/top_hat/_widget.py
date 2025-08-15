@@ -33,8 +33,25 @@ from typing import TYPE_CHECKING
 
 from magicgui import magic_factory
 from magicgui.widgets import CheckBox, Container, create_widget
-from qtpy.QtWidgets import QHBoxLayout, QPushButton, QWidget
+from napari.utils import progress
+from napari.utils.notifications import show_error, show_info, show_warning
+from qtpy.QtCore import QSettings
+from qtpy.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QHBoxLayout,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 from skimage.util import img_as_float
+
+from .utils.colors import generate_random_hex_color
+from .utils.data_loaders import FAFB_loader
+from .utils.plotter import plot_tracts_placeholder
 
 if TYPE_CHECKING:
     import napari
@@ -127,3 +144,195 @@ class ExampleQWidget(QWidget):
 
     def _on_click(self):
         print("napari has", len(self.viewer.layers), "layers")
+
+
+class HatViewer(QWidget):
+    """
+    A napari widget for loading and visualizing FAFB hemilineage data.
+    """
+
+    def __init__(self, viewer: "napari.viewer.Viewer"):
+        super().__init__()
+        self.viewer = viewer
+        self.loader = None
+        self.added_layers = []
+
+        # --- UI Setup ---
+        self.setLayout(QVBoxLayout())
+
+        # 1. Data Connection
+        connection_layout = QHBoxLayout()
+        self.path_edit = QLineEdit()
+        self.path_edit.setPlaceholderText("Enter path to FAFB dataset...")
+        browse_btn = QPushButton("Browse")
+        connect_btn = QPushButton("Connect")
+        connection_layout.addWidget(self.path_edit)
+        connection_layout.addWidget(browse_btn)
+        connection_layout.addWidget(connect_btn)
+        self.layout().addLayout(connection_layout)
+
+        # 2. Data Type Selection
+        self.data_type_combo = QComboBox()
+        self.data_type_combo.addItems(["Whole neuron", "CBF", "Bundles"])
+        self.layout().addWidget(self.data_type_combo)
+
+        # 3. Hemilineage Search and Selection
+        self.search_box = QLineEdit()
+        self.search_box.setPlaceholderText("Search for hemilineages...")
+        self.hemilineage_list_widget = QListWidget()
+        self.hemilineage_list_widget.setSelectionMode(
+            QListWidget.ExtendedSelection
+        )
+        self.layout().addWidget(self.search_box)
+        self.layout().addWidget(self.hemilineage_list_widget)
+
+        # 4. Action Buttons
+        action_layout = QHBoxLayout()
+        add_btn = QPushButton("Add Layers")
+        clean_btn = QPushButton("Clean All")
+        plot_btn = QPushButton("Plot Tracts")
+        action_layout.addWidget(add_btn)
+        action_layout.addWidget(clean_btn)
+        action_layout.addWidget(plot_btn)
+        self.layout().addLayout(action_layout)
+
+        # --- Connections ---
+        browse_btn.clicked.connect(self._on_browse)
+        connect_btn.clicked.connect(self._on_connect)
+        add_btn.clicked.connect(self._on_add_layers)
+        clean_btn.clicked.connect(self._on_clean_all)
+        plot_btn.clicked.connect(self._on_plot_tracts)
+        self.search_box.textChanged.connect(self._update_hemilineage_list)
+
+        # --- Load Settings ---
+        self._load_settings()
+
+    def _load_settings(self):
+        """Load the last used data path from settings."""
+        settings = QSettings("top-hat", "hat-viewer")
+        last_path = settings.value("data_path", "")
+        if last_path:
+            self.path_edit.setText(last_path)
+
+    def _save_settings(self):
+        """Save the current data path to settings."""
+        settings = QSettings("top-hat", "hat-viewer")
+        settings.setValue("data_path", self.path_edit.text())
+
+    def _on_connect(self):
+        """Connect to the FAFB dataset path."""
+        path = self.path_edit.text()
+        if not path:
+            show_warning("Please provide a path.")
+            return
+
+        try:
+            # Initialize the loader first (this is fast)
+            self.loader = FAFB_loader(path)
+            # Then run the validation, which is slow and will show a progress bar
+            self.loader.validate_dataset(progress_wrapper=progress)
+            show_info("Successfully connected to dataset!")
+            self._save_settings()
+            self._update_hemilineage_list()
+        except (FileNotFoundError, ValueError, NotADirectoryError) as e:
+            show_error(f"Connection failed: {e}")
+            self.loader = None
+
+    def _on_browse(self):
+        """Open a dialog to select the data directory."""
+        path = QFileDialog.getExistingDirectory(
+            self, "Select FAFB Dataset Directory"
+        )
+        if path:
+            self.path_edit.setText(path)
+            self._on_connect()
+
+    def _update_hemilineage_list(self):
+        """Update the list of hemilineages based on search text."""
+        self.hemilineage_list_widget.clear()
+        if not self.loader:
+            return
+
+        search_text = self.search_box.text().lower()
+        all_hemilineages = self.loader.get_hemilineage_list()
+
+        filtered_list = [
+            name for name in all_hemilineages if search_text in name.lower()
+        ]
+
+        for name in filtered_list:
+            self.hemilineage_list_widget.addItem(QListWidgetItem(name))
+
+    def _on_add_layers(self):
+        """Add selected hemilineages as new layers to the viewer."""
+        if not self.loader:
+            show_warning("Please connect to a dataset first.")
+            return
+
+        selected_items = self.hemilineage_list_widget.selectedItems()
+        if not selected_items:
+            show_warning("No hemilineages selected.")
+            return
+
+        data_type = self.data_type_combo.currentText()
+
+        for item in selected_items:
+            hemilineage_name = item.text()
+            try:
+                if data_type == "Whole neuron":
+                    data = self.loader.get_whole_neuron_nrrd(hemilineage_name)
+                elif data_type == "CBF":
+                    data = self.loader.get_cellbody_fiber_nrrd(
+                        hemilineage_name
+                    )
+                else:  # Bundles
+                    data = self.loader.get_hat_bundles_nrrd(hemilineage_name)
+                layer_name = f"{hemilineage_name}_{data_type}"
+                layer_kwargs = {
+                    "name": layer_name,
+                    "axis_labels": ("x", "y", "z"),
+                    "blending": "additive",
+                    "contrast_limits": [0, 1],
+                    "colormap": generate_random_hex_color(),
+                    "scale": (0.38, 0.38, 0.38),
+                    "units": ("micron", "micron", "micron"),
+                }
+                # new_layer = self.viewer.add_labels(data, **layer_kwargs)
+                new_layer = self.viewer.add_image(data, **layer_kwargs)
+                self.added_layers.append(new_layer)
+
+            except (FileNotFoundError, ValueError) as e:
+                show_error(f"Failed to load {hemilineage_name}: {e}")
+
+    def _on_clean_all(self):
+        """Remove all layers added by this widget."""
+        for layer in self.added_layers:
+            if layer in self.viewer.layers:
+                self.viewer.layers.remove(layer)
+        self.added_layers.clear()
+        show_info("Removed all added layers.")
+
+    def _on_plot_tracts(self):
+        """Placeholder for plotting tracts."""
+        if not self.added_layers:
+            show_warning("No layers have been added to plot.")
+            return
+
+        # Open a file dialog to get the save path
+        save_path, _ = QFileDialog.getSaveFileName(
+            self, "Save Tracts Plot", "", "Text Files (*.txt);;All Files (*)"
+        )
+        if not save_path:
+            return
+
+        # Gather info about active layers
+        active_hemilineages = []
+        for layer in self.added_layers:
+            if layer in self.viewer.layers:
+                active_hemilineages.append(
+                    {"name": layer.name, "color": layer.color}
+                )
+
+        # Call the placeholder function
+        plot_tracts_placeholder(active_hemilineages, save_path)
+        show_info(f"Plotting info saved to {save_path}")

@@ -36,6 +36,7 @@ dependencies = [
     "pynrrd",
     "pandas",
     "tifffile",
+    "navis[all]"
 ]
 
 [project.optional-dependencies]

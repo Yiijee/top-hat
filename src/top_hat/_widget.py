@@ -151,6 +151,14 @@ class PointSelectorWidget(QWidget):
         self.centroid_btn.clicked.connect(self.get_cluster_centroid)
         self.layout().addWidget(self.centroid_btn)
 
+        # Add button to get matched hemilineages
+        self.match_btn = QPushButton("Click to get matched hemilineages (based on 3*RMSE)")
+        self.match_btn.clicked.connect(self.on_get_matched_hemilineages)
+        self.layout().addWidget(self.match_btn)
+
+        # Store last calculated centroid
+        self.last_centroid = None
+
     def on_points_added(self, event):
         coords = self.points_layer.data
         labels = [str(i+1) for i in range(len(coords))]
@@ -197,6 +205,7 @@ class PointSelectorWidget(QWidget):
             if centroid_tuple is None:
                 self.info_label.setText("No valid points for centroid.")
                 return None
+            self.last_centroid = centroid_tuple  # 保存质心
             self.info_label.setText(
                 f"Selected points:\n{self.info_label.text().split('Selected points:\n')[-1]}\n"
                 f"Centroid of points {indices_str}: {centroid_tuple}"
@@ -211,22 +220,23 @@ class PointSelectorWidget(QWidget):
             self.info_label.setText(f"Error: {e}")
             return None
 
+    def on_get_matched_hemilineages(self):
+        csv_path = '/Users/yunzhil/Desktop/fafb_mapping/hemilineage_info_centroid_rmse.csv'
+        user_centroid = self.last_centroid
+        if user_centroid is None:
+            self.info_label.setText("Please calculate a centroid first.")
+            return
+        result = self.find_matching_hemilineages(user_centroid, csv_path)
+        hemis = result['hemilineages']
+        hemi_str = "\n".join(hemis) if hemis else "No matched hemilineages."
+        self.info_label.setText(
+            f"User centroid: {result['user_centroid']}\nMatched hemilineages (sorted by distance):\n{hemi_str}"
+        )
+
+    @staticmethod
     def find_matching_hemilineages(user_centroid, csv_path):
-        """
-        Given a user-selected centroid (x, y, z) and a CSV file containing
-        hemilineage centroids and 3*RMSE, return a sorted list of hemilineages
-        whose centroid spheres (radius=3*RMSE) contain the user centroid.
-
-        Args:
-            user_centroid (tuple): (x, y, z) coordinates of the user-selected centroid.
-            csv_path (str): Absolute path to the CSV file.
-
-        Returns:
-            pd.DataFrame: DataFrame with columns ['hemilineage', 'distance', 'centroid_x', 'centroid_y', 'centroid_z', '3*RMSE'],
-                        sorted by 'distance' ascending.
-        """
- 
-        # Load hemilineage data
+        import pandas as pd
+        import numpy as np
         df = pd.read_csv(csv_path)
         # Ensure columns: hemilineage, centroid_x, centroid_y, centroid_z, 3*RMSE
         required_cols = {'hemilineage', 'centroid_x', 'centroid_y', 'centroid_z', '3*RMSE'}

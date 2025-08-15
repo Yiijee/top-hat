@@ -330,7 +330,7 @@ class HatViewer(QWidget):
         for layer in self.added_layers:
             if layer in self.viewer.layers:
                 active_hemilineages.append(
-                    {"name": layer.name, "color": layer.color}
+                    {"name": layer.name, "color": layer.colormap}
                 )
 
         # Call the placeholder function

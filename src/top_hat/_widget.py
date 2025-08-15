@@ -161,11 +161,20 @@ class PointSelectorWidget(QWidget):
         ])
         self.info_label.setText(f"Selected points:\n{info}")
 
+    def calculate_centroid(self, indices):
+        """Return the centroid coordinates for selected indices."""
+        coords = self.points_layer.data
+        if len(coords) == 0 or not indices:
+            return None
+        selected_coords = coords[indices]
+        centroid = selected_coords.mean(axis=0)
+        return tuple(float(c) for c in centroid)
+
     def get_cluster_centroid(self):
         coords = self.points_layer.data
         if len(coords) == 0:
             self.info_label.setText("No points selected.")
-            return
+            return None  
 
         indices_str, ok = QInputDialog.getText(
             self,
@@ -173,27 +182,34 @@ class PointSelectorWidget(QWidget):
             "Enter point indices (e.g., 1,2,3 or 1-5) used for calculating the cell cluster centroid:"
         )
         if not ok or not indices_str.strip():
-            return
+            return None
 
         try:
-            # support comma-separated and range inputs
             indices = []
             for part in indices_str.split(","):
                 part = part.strip()
                 if "-" in part:
                     start, end = map(int, part.split("-"))
-                    indices.extend(range(start - 1, end))  # 1-based to 0-based
+                    indices.extend(range(start - 1, end))
                 elif part:
                     indices.append(int(part) - 1)
-            selected_coords = coords[indices]
-            centroid = selected_coords.mean(axis=0)
-            centroid_tuple = tuple(float(c) for c in centroid)
+            centroid_tuple = self.calculate_centroid(indices)
+            if centroid_tuple is None:
+                self.info_label.setText("No valid points for centroid.")
+                return None
             self.info_label.setText(
                 f"Selected points:\n{self.info_label.text().split('Selected points:\n')[-1]}\n"
                 f"Centroid of points {indices_str}: {centroid_tuple}"
             )
+             # in napari, create a new Points layer called LM_centroid, and show the centroid
+            if "LM_centroid" in self.viewer.layers:
+                self.viewer.layers["LM_centroid"].data = [centroid_tuple]
+            else:
+                self.viewer.add_points([centroid_tuple], name="LM_centroid", size=15, face_color="yellow")
+            return centroid_tuple    
         except Exception as e:
             self.info_label.setText(f"Error: {e}")
+            return None
 
 
 

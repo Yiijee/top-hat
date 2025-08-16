@@ -130,17 +130,6 @@ class ExampleQWidget(QWidget):
         self.setLayout(QHBoxLayout())
         self.layout().addWidget(btn)
 
-        # Add button for Later functions - ###a pseudo window just for fun. please change this chunk into something useful.
-        self.combo_btn = QPushButton("Crazy Thursday V me fifty!!")
-        self.combo_btn.clicked.connect(self.Your_Combo)
-        self.layout().addWidget(self.combo_btn)
-
-
-        # Store last calculated centroid
-        self.last_centroid = None
-        self.last_matched_hemilineages = None  
-
-
     def _on_click(self):
         print("napari has", len(self.viewer.layers), "layers")
 
@@ -162,8 +151,16 @@ class PointSelectorWidget(QWidget):
         self.centroid_btn.clicked.connect(self.get_cluster_centroid)
         self.layout().addWidget(self.centroid_btn)
 
+        # Add button for Later functions - ###a pseudo window just for fun. please change this chunk into something useful.
+        self.combo_btn = QPushButton("Crazy Thursday V me fifty!!")
+        self.combo_btn.clicked.connect(self.Your_Combo)
+        self.layout().addWidget(self.combo_btn)
+
+
         # Store last calculated centroid
         self.last_centroid = None
+        self.last_matched_hemilineages = None  
+
 
     def on_points_added(self, event):
         coords = self.points_layer.data

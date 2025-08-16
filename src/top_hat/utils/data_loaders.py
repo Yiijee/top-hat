@@ -28,6 +28,7 @@ class FAFB_loader:
         self.fafb_root = Path(path)
         self.hemilineage_list: list[str] = []
         self._read_hemilineage_list(hemilineage_number)
+        self.hemilineage_df: pd.DataFrame = pd.DataFrame()
 
     def _read_hemilineage_list(self, hemilineage_number: int):
         """
@@ -46,14 +47,24 @@ class FAFB_loader:
                 f"Dataset is not complete, missing {hemilineage_csv}"
             )
 
-        hemilineage_df = pd.read_csv(hemilineage_csv)
-        self.hemilineage_list = hemilineage_df["ito_lee_hemilineage"].tolist()
+        self.hemilineage_df = pd.read_csv(hemilineage_csv)
+        self.hemilineage_list = self.hemilineage_df[
+            "ito_lee_hemilineage"
+        ].tolist()
 
         if len(self.hemilineage_list) != hemilineage_number:
             raise ValueError(
                 f"Expected {hemilineage_number} hemilineages, "
                 f"but found {len(self.hemilineage_list)}."
             )
+
+    def get_somas(self) -> pd.DataFrame:
+        """
+        Get the somas data for all hemilineages.
+        """
+        hemilineage_csv = self.fafb_root / "hemilineage_summary.csv"
+        self.hemilineage_df = pd.read_csv(hemilineage_csv)
+        return self.hemilineage_df
 
     def validate_dataset(self, progress_wrapper=None):
         """

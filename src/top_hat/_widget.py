@@ -40,6 +40,8 @@ from qtpy.QtWidgets import (
     QComboBox,
     QFileDialog,
     QHBoxLayout,
+    QInputDialog,
+    QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
@@ -49,6 +51,7 @@ from qtpy.QtWidgets import (
 )
 from skimage.util import img_as_float
 
+from .core.cellbody_matching import centroid_matching
 from .utils.colors import generate_random_hex_color
 from .utils.data_loaders import FAFB_loader
 from .utils.plotter import plot_tracts
@@ -144,6 +147,175 @@ class ExampleQWidget(QWidget):
 
     def _on_click(self):
         print("napari has", len(self.viewer.layers), "layers")
+
+
+class TopMatch(QWidget):
+    def __init__(self, viewer: "napari.viewer.Viewer"):
+        super().__init__()
+        self.viewer = viewer
+        self.loader = None
+        # --- UI Setup ---
+        self.setLayout(QVBoxLayout())
+
+        # 1. Data Connection
+        connection_layout = QHBoxLayout()
+        self.path_edit = QLineEdit()
+        self.path_edit.setPlaceholderText("Enter path to FAFB dataset...")
+        browse_btn = QPushButton("Browse")
+        connect_btn = QPushButton("Connect")
+        connection_layout.addWidget(self.path_edit)
+        connection_layout.addWidget(browse_btn)
+        connection_layout.addWidget(connect_btn)
+        self.layout().addLayout(connection_layout)
+        # --- Connections ---
+        browse_btn.clicked.connect(self._on_browse)
+        connect_btn.clicked.connect(self._on_connect)
+        # --- Load Settings ---
+        self._load_settings()
+
+        # 2. Detect connection
+        self.info_label = QLabel(
+            "Select points in the viewer to record (z, y, x) coordinates."
+        )
+        self.layout().addWidget(self.info_label)
+
+        self.points_layer = viewer.add_points(name="Selected Points", ndim=3)
+        self.points_layer.events.data.connect(self.on_points_added)
+
+        # Add button to get cluster centroid
+        self.centroid_btn = QPushButton("Get Cluster Centroid")
+        self.centroid_btn.clicked.connect(self.get_cluster_centroid)
+        self.layout().addWidget(self.centroid_btn)
+
+        # Add button for Later functions - ###a pseudo window just for fun. please change this chunk into something useful.
+        self.combo_btn = QPushButton("Crazy Thursday V me fifty!!")
+        self.combo_btn.clicked.connect(self.Your_Combo)
+        self.layout().addWidget(self.combo_btn)
+
+        # Store last calculated centroid
+        self.last_centroid = None
+        self.last_matched_hemilineages = None
+
+    def _load_settings(self):
+        """Load the last used data path from settings."""
+        settings = QSettings("top-hat", "hat-viewer")
+        last_path = settings.value("data_path", "")
+        if last_path:
+            self.path_edit.setText(last_path)
+
+    def _save_settings(self):
+        """Save the current data path to settings."""
+        settings = QSettings("top-hat", "hat-viewer")
+        settings.setValue("data_path", self.path_edit.text())
+
+    def _on_connect(self):
+        """Connect to the FAFB dataset path."""
+        path = self.path_edit.text()
+        if not path:
+            show_warning("Please provide a path.")
+            return
+
+        try:
+            # Initialize the loader first (this is fast)
+            self.loader = FAFB_loader(path)
+            # Then run the validation, which is slow and will show a progress bar
+            self.loader.validate_dataset(progress_wrapper=progress)
+            show_info("Successfully connected to dataset!")
+            self._save_settings()
+        except (FileNotFoundError, ValueError, NotADirectoryError) as e:
+            show_error(f"Connection failed: {e}")
+            self.loader = None
+
+    def _on_browse(self):
+        """Open a dialog to select the data directory."""
+        path = QFileDialog.getExistingDirectory(
+            self, "Select FAFB Dataset Directory"
+        )
+        if path:
+            self.path_edit.setText(path)
+            self._on_connect()
+
+    def on_points_added(self, event):
+        coords = self.points_layer.data
+        labels = [str(i + 1) for i in range(len(coords))]
+        self.points_layer.text = {"string": labels, "size": 8, "color": "red"}
+
+    def calculate_centroid(self, indices):
+        """Return the centroid coordinates for selected indices."""
+        coords = self.points_layer.data
+        if len(coords) == 0 or not indices:
+            return None
+        selected_coords = coords[indices]
+        centroid = selected_coords.mean(axis=0)
+        return tuple(float(c) for c in centroid)
+
+    def get_cluster_centroid(self):
+        coords = self.points_layer.data
+        if len(coords) == 0:
+            self.info_label.setText("No points selected.")
+            return None
+
+        indices_str, ok = QInputDialog.getText(
+            self,
+            "Input Point Indices",
+            "Enter point indices (e.g., 1,2,3 or 1-5) used for calculating the cell cluster centroid:",
+        )
+        if not ok or not indices_str.strip():
+            return None
+
+        try:
+            indices = []
+            for part in indices_str.split(","):
+                part = part.strip()
+                if "-" in part:
+                    start, end = map(int, part.split("-"))
+                    indices.extend(range(start - 1, end))
+                elif part:
+                    indices.append(int(part) - 1)
+            centroid_tuple = self.calculate_centroid(indices)
+            if centroid_tuple is None:
+                self.info_label.setText("No valid points for centroid.")
+                return None
+            self.last_centroid = centroid_tuple
+
+            # in napari, create a new Points layer called LM_centroid, and show the centroid
+            if "LM_centroid" in self.viewer.layers:
+                self.viewer.layers["LM_centroid"].data = [centroid_tuple]
+            else:
+                self.viewer.add_points(
+                    [centroid_tuple],
+                    name="LM_centroid",
+                    size=15,
+                    face_color="yellow",
+                )
+
+            # calculate matched hemilineages
+            user_centroid = centroid_tuple[::-1]  # change axis order
+            print(f"Using user centroid: {user_centroid}")
+            result = centroid_matching(user_centroid, self.loader)
+            self.last_matched_hemilineages = result  # save the results
+            print(f"Matched hemilineages: {result['hemilineages']}")
+            return centroid_tuple
+        except (OSError, ValueError, KeyError) as e:
+            self.info_label.setText(f"Error: {e}")
+            return None
+
+    ## delete this chunk for later functions ...start
+    def Your_Combo(self):
+        """Write matched hemilineages info to Enjoy_the_Combo.txt"""
+        if self.last_matched_hemilineages is None:
+            self.info_label.setText("No matched hemilineages data to save.")
+            return
+        try:
+            with open("Enjoy_the_Combo.txt", "w") as f:
+                f.write(str(self.last_matched_hemilineages))
+            self.info_label.setText(
+                "Enjoy the Combo!check a file called Enjoy_the_Combo.txt"
+            )
+        except (OSError, ValueError) as e:
+            self.info_label.setText(f"Error saving combo: {e}")
+
+    ## delete this chunk for later functions ...end
 
 
 class HatViewer(QWidget):

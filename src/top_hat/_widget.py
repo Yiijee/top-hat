@@ -232,7 +232,7 @@ class PointSelectorWidget(QWidget):
         try:
             with open("Enjoy_the_Combo.txt", "w") as f:
                 f.write(str(self.last_matched_hemilineages))
-            self.info_label.setText("Enjoy the Combo!")
+            self.info_label.setText("Enjoy the Combo!check a file called Enjoy_the_Combo.txt")
         except Exception as e:
             self.info_label.setText(f"Error saving combo: {e}")
     ## delete this chunk for later functions ...end

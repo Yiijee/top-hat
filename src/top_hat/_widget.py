@@ -51,7 +51,7 @@ from skimage.util import img_as_float
 
 from .utils.colors import generate_random_hex_color
 from .utils.data_loaders import FAFB_loader
-from .utils.plotter import plot_tracts_placeholder
+from .utils.plotter import plot_tracts
 
 if TYPE_CHECKING:
     import napari
@@ -336,8 +336,6 @@ class HatViewer(QWidget):
                     layer.colormap.name
                 )
 
-        # Call the placeholder function
-        plot_tracts_placeholder(
-            active_hemilineages, save_path, self.loader, progress
-        )
+        # Call the plotting function
+        plot_tracts(active_hemilineages, save_path, self.loader, progress)
         show_info(f"Plotting saved to {save_path}")

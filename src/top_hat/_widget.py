@@ -130,6 +130,17 @@ class ExampleQWidget(QWidget):
         self.setLayout(QHBoxLayout())
         self.layout().addWidget(btn)
 
+        # Add button for Later functions - ###a pseudo window just for fun. please change this chunk into something useful.
+        self.combo_btn = QPushButton("Crazy Thursday V me fifty!!")
+        self.combo_btn.clicked.connect(self.Your_Combo)
+        self.layout().addWidget(self.combo_btn)
+
+
+        # Store last calculated centroid
+        self.last_centroid = None
+        self.last_matched_hemilineages = None  
+
+
     def _on_click(self):
         print("napari has", len(self.viewer.layers), "layers")
 
@@ -151,23 +162,14 @@ class PointSelectorWidget(QWidget):
         self.centroid_btn.clicked.connect(self.get_cluster_centroid)
         self.layout().addWidget(self.centroid_btn)
 
-        # Add button to get matched hemilineages
-        self.match_btn = QPushButton("Click to get matched hemilineages (based on 3*RMSE)")
-        self.match_btn.clicked.connect(self.on_get_matched_hemilineages)
-        self.layout().addWidget(self.match_btn)
-
         # Store last calculated centroid
         self.last_centroid = None
 
     def on_points_added(self, event):
         coords = self.points_layer.data
         labels = [str(i+1) for i in range(len(coords))]
-        self.points_layer.text = {'string': labels, 'size': 12, 'color': 'red'}
-        info = "\n".join([
-            f"{label}: {tuple(float(c) for c in coord)}"
-            for label, coord in zip(labels, coords)
-        ])
-        self.info_label.setText(f"Selected points:\n{info}")
+        self.points_layer.text = {'string': labels, 'size': 8, 'color': 'red'}
+        
 
     def calculate_centroid(self, indices):
         """Return the centroid coordinates for selected indices."""
@@ -206,33 +208,37 @@ class PointSelectorWidget(QWidget):
                 self.info_label.setText("No valid points for centroid.")
                 return None
             self.last_centroid = centroid_tuple  
-            self.info_label.setText(
-                f"Selected points:\n{self.info_label.text().split('Selected points:\n')[-1]}\n"
-                f"Centroid of points {indices_str}: {centroid_tuple}"
-            )
+            
              # in napari, create a new Points layer called LM_centroid, and show the centroid
             if "LM_centroid" in self.viewer.layers:
                 self.viewer.layers["LM_centroid"].data = [centroid_tuple]
             else:
                 self.viewer.add_points([centroid_tuple], name="LM_centroid", size=15, face_color="yellow")
+            
+            # calculate matched hemilineages
+            csv_path = '/Users/yunzhil/Desktop/fafb_mapping/hemilineage_info_centroid_rmse.csv'
+            user_centroid = centroid_tuple[::-1]  # change axis order
+            result = self.find_matching_hemilineages(user_centroid, csv_path)
+            self.last_matched_hemilineages = result  # save the results
+            
             return centroid_tuple    
         except Exception as e:
             self.info_label.setText(f"Error: {e}")
             return None
-
-    def on_get_matched_hemilineages(self):
-        csv_path = '/Users/yunzhil/Desktop/fafb_mapping/hemilineage_info_centroid_rmse.csv'
-        user_centroid = self.last_centroid
-        if user_centroid is None:
-            self.info_label.setText("Please calculate a centroid first.")
+    
+    ## delete this chunk for later functions ...start
+    def Your_Combo(self):
+        """Write matched hemilineages info to Enjoy_the_Combo.txt"""
+        if self.last_matched_hemilineages is None:
+            self.info_label.setText("No matched hemilineages data to save.")
             return
-        user_centroid = self.last_centroid[::-1]
-        result = self.find_matching_hemilineages(user_centroid, csv_path)
-        hemis = result['hemilineages']
-        hemi_str = "\n".join(hemis) if hemis else "No matched hemilineages."
-        self.info_label.setText(
-            f"User centroid: {result['user_centroid']}\nMatched hemilineages (sorted by distance):\n{hemi_str}"
-        )
+        try:
+            with open("Enjoy_the_Combo.txt", "w") as f:
+                f.write(str(self.last_matched_hemilineages))
+            self.info_label.setText("Enjoy the Combo!")
+        except Exception as e:
+            self.info_label.setText(f"Error saving combo: {e}")
+    ## delete this chunk for later functions ...end
 
     @staticmethod
     def find_matching_hemilineages(user_centroid, csv_path):

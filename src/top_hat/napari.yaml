@@ -31,10 +31,10 @@ contributions:
       python_name: top_hat:ExampleQWidget
       title: Make example QWidget
     - id: top-hat.TopMatch
-      python_name: top_hat._widget:TopMatch
+      python_name: top_hat.top_match_widget:TopMatch
       title: Top Match
-    - id: top-hat.hat_viewer
-      python_name: top_hat._widget:HatViewer
+    - id: top-hat.HatViewer
+      python_name: top_hat.hat_viewer_widget:HatViewer
       title: Hat Viewer
   readers:
     - command: top-hat.get_reader
@@ -63,5 +63,5 @@ contributions:
       display_name: Example QWidget
     - command: top-hat.TopMatch
       display_name: Top Match
-    - command: top-hat.hat_viewer
+    - command: top-hat.HatViewer
       display_name: Hat Viewer

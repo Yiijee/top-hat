@@ -4,6 +4,7 @@ from qtpy.QtWidgets import QVBoxLayout, QWidget
 
 from .utils.qwidget_modules import (
     ConnectionWidget,
+    MatchingHatWidget,
     SomaDetectionWidget,
     ThresholdWidget,
 )
@@ -30,9 +31,19 @@ class TopMatch(QWidget):
         self.soma_detection_widget = SomaDetectionWidget(self.viewer)
         self.layout().addWidget(self.soma_detection_widget)
 
-        # Connect the connection widget to the soma detection widget
+        # 4. Matching Hat Widget
+        self.matching_hat_widget = MatchingHatWidget(self.viewer)
+        self.layout().addWidget(self.matching_hat_widget)
+
+        # Connect the connection widget to the other widgets
         self.connection_widget.connected.connect(
             self.soma_detection_widget.set_loader
+        )
+        self.connection_widget.connected.connect(
+            self.matching_hat_widget.set_loader
+        )
+        self.soma_detection_widget.matched.connect(
+            self.matching_hat_widget.set_hemilineages
         )
 
         # Placeholder for other functionalities

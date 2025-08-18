@@ -1,16 +1,25 @@
 # src/top_hat/utils/qwidget_modules.py
+from typing import TYPE_CHECKING
+
 from napari.utils import progress
 from napari.utils.notifications import show_error, show_info, show_warning
 from qtpy.QtCore import QSettings, Signal
 from qtpy.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
+    QInputDialog,
+    QLabel,
     QLineEdit,
     QPushButton,
+    QVBoxLayout,
     QWidget,
 )
 
+from ..core.cellbody_matching import centroid_matching
 from .data_loaders import FAFB_loader
+
+if TYPE_CHECKING:
+    import napari
 
 
 class ConnectionWidget(QWidget):
@@ -73,3 +82,111 @@ class ConnectionWidget(QWidget):
         if path:
             self.path_edit.setText(path)
             self._on_connect()
+
+
+class SomaDetectionWidget(QWidget):
+    """A widget for soma detection and centroid calculation."""
+
+    def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        super().__init__(parent)
+        self.viewer = viewer
+        self.loader = None
+        self.last_centroid = None
+        self.last_matched_hemilineages = None
+
+        self.setLayout(QVBoxLayout())
+
+        # --- UI Setup ---
+        self.info_label = QLabel(
+            "Select points in the viewer to record (z, y, x) coordinates."
+        )
+        self.layout().addWidget(self.info_label)
+
+        self.points_layer = self.viewer.add_points(
+            name="Selected Points", ndim=3
+        )
+        self.points_layer.events.data.connect(self._on_points_added)
+
+        self.centroid_btn = QPushButton("Get Cluster Centroid")
+        self.centroid_btn.clicked.connect(self._get_cluster_centroid)
+        self.layout().addWidget(self.centroid_btn)
+        self.centroid_btn.setEnabled(False)  # Disabled until connected
+
+    def set_loader(self, loader_instance):
+        """Set the data loader and enable the widget."""
+        self.loader = loader_instance
+        self.centroid_btn.setEnabled(self.loader is not None)
+
+    def _on_points_added(self, event):
+        """Update point labels when data changes."""
+        coords = self.points_layer.data
+        labels = [str(i + 1) for i in range(len(coords))]
+        self.points_layer.text = {"string": labels, "size": 8, "color": "red"}
+
+    def _calculate_centroid(self, indices):
+        """Return the centroid coordinates for selected indices."""
+        coords = self.points_layer.data
+        if len(coords) == 0 or not indices:
+            return None
+        selected_coords = coords[indices]
+        return tuple(float(c) for c in selected_coords.mean(axis=0))
+
+    def _get_cluster_centroid(self):
+        """Get point indices from user, calculate centroid, and run matching."""
+        if self.loader is None:
+            show_warning("Please connect to a dataset first.")
+            return
+
+        coords = self.points_layer.data
+        if len(coords) == 0:
+            self.info_label.setText("No points selected.")
+            return
+
+        indices_str, ok = QInputDialog.getText(
+            self,
+            "Input Point Indices",
+            "Enter point indices (e.g., 1,2,3 or 1-5) for centroid calculation:",
+        )
+        if not ok or not indices_str.strip():
+            return
+
+        try:
+            indices = []
+            for part in indices_str.split(","):
+                part = part.strip()
+                if "-" in part:
+                    start, end = map(int, part.split("-"))
+                    indices.extend(range(start - 1, end))
+                elif part:
+                    indices.append(int(part) - 1)
+
+            centroid_tuple = self._calculate_centroid(indices)
+            if centroid_tuple is None:
+                self.info_label.setText("No valid points for centroid.")
+                return
+
+            self.last_centroid = centroid_tuple
+            self._update_viewer_with_centroid(centroid_tuple)
+
+            user_centroid = centroid_tuple[::-1]  # Reverse for matching
+            result = centroid_matching(user_centroid, self.loader)
+            self.last_matched_hemilineages = result
+            print(f"Matched hemilineages: {result['hemilineages']}")
+            show_info(f"Matched hemilineages: {result['hemilineages']}")
+
+        except (ValueError, IndexError) as e:
+            show_error(f"Invalid input: {e}")
+        # except Exception as e:
+        #     show_error(f"An error occurred: {e}")
+
+    def _update_viewer_with_centroid(self, centroid):
+        """Add or update the centroid point layer in the viewer."""
+        if "LM_centroid" in self.viewer.layers:
+            self.viewer.layers["LM_centroid"].data = [centroid]
+        else:
+            self.viewer.add_points(
+                [centroid],
+                name="LM_centroid",
+                size=15,
+                face_color="yellow",
+            )

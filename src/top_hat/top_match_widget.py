@@ -2,7 +2,11 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
-from .utils.qwidget_modules import ConnectionWidget, SomaDetectionWidget
+from .utils.qwidget_modules import (
+    ConnectionWidget,
+    SomaDetectionWidget,
+    ThresholdWidget,
+)
 
 if TYPE_CHECKING:
     import napari
@@ -18,7 +22,11 @@ class TopMatch(QWidget):
         self.connection_widget = ConnectionWidget()
         self.layout().addWidget(self.connection_widget)
 
-        # 2. Soma Detection Widget
+        # 2. Threshold Widget
+        self.threshold_widget = ThresholdWidget(self.viewer)
+        self.layout().addWidget(self.threshold_widget)
+
+        # 3. Soma Detection Widget
         self.soma_detection_widget = SomaDetectionWidget(self.viewer)
         self.layout().addWidget(self.soma_detection_widget)
 

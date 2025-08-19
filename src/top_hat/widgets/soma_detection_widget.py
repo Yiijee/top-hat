@@ -61,6 +61,14 @@ class SomaDetectionWidget(QWidget):
             self.viewer.layers["Selected Points"].data = []
         if "LM_centroid" in self.viewer.layers:
             self.viewer.layers["LM_centroid"].data = []
+        if "Selected Points" not in self.viewer.layers:
+            self.points_layer = self.viewer.add_points(
+                name="Selected Points", ndim=3
+            )
+        if "LM_centroid" not in self.viewer.layers:
+            self.viewer.add_points(
+                name="LM_centroid", size=15, face_color="red", ndim=3
+            )
         self.manual_centroid = None
         self.last_matched_hemilineages = None
         self.info_label.setText(

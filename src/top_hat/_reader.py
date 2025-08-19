@@ -79,6 +79,9 @@ def reader_function(path):
         "axis_labels": ("x", "y", "z"),
         "scale": (0.38, 0.38, 0.38),
         "units": ("micron", "micron", "micron"),
+        "metadata": {
+            "path": path,
+        },
     }
 
     layer_type = "image"  # optional, default is "image"

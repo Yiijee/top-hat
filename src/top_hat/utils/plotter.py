@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import navis
 
 
-def plot_tracts_placeholder(
+def plot_tracts(
     active_hemilineages: dict[str, str],
     output_path: Path,
     loader: any,

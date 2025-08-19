@@ -18,20 +18,11 @@ contributions:
     - id: top-hat.make_sample_data
       python_name: top_hat._sample_data:make_sample_data
       title: Load sample data from Top HAT
-    - id: top-hat.make_container_widget
-      python_name: top_hat:ImageThreshold
-      title: Make threshold Container widget
-    - id: top-hat.make_magic_widget
-      python_name: top_hat:threshold_magic_widget
-      title: Make threshold magic widget
-    - id: top-hat.make_function_widget
-      python_name: top_hat:threshold_autogenerate_widget
-      title: Make threshold function widget
-    - id: top-hat.make_qwidget
-      python_name: top_hat:ExampleQWidget
-      title: Make example QWidget
-    - id: top-hat.hat_viewer
-      python_name: top_hat._widget:HatViewer
+    - id: top-hat.TopMatch
+      python_name: top_hat.top_match_widget:TopMatch
+      title: Top Match
+    - id: top-hat.HatViewer
+      python_name: top_hat.hat_viewer_widget:HatViewer
       title: Hat Viewer
   readers:
     - command: top-hat.get_reader
@@ -49,14 +40,7 @@ contributions:
       display_name: Top HAT
       key: unique_id.1
   widgets:
-    - command: top-hat.make_container_widget
-      display_name: Container Threshold
-    - command: top-hat.make_magic_widget
-      display_name: Magic Threshold
-    - command: top-hat.make_function_widget
-      autogenerate: true
-      display_name: Autogenerate Threshold
-    - command: top-hat.make_qwidget
-      display_name: Example QWidget
-    - command: top-hat.hat_viewer
+    - command: top-hat.TopMatch
+      display_name: Top Match
+    - command: top-hat.HatViewer
       display_name: Hat Viewer

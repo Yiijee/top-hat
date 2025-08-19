@@ -9,7 +9,13 @@
 [![npe2](https://img.shields.io/badge/plugin-npe2-blue?link=https://napari.org/stable/plugins/index.html)](https://napari.org/stable/plugins/index.html)
 [![Copier](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/copier-org/copier/master/img/badge/badge-grayscale-inverted-border-purple.json)](https://github.com/copier-org/copier)
 
-Mapping hemilineage associate tracts in light microscopy images
+Mapping hemilineage associate tracts in light microscopy images.
+
+This tool is still under developing and only avaible for Clowney lab internal use.
+
+To-do:
+- [ ] Complete documentation
+- [ ] Release the first version
 
 ----------------------------------
 
@@ -23,36 +29,52 @@ and review the napari docs for plugin developers:
 https://napari.org/stable/plugins/index.html
 -->
 
-## Developing in progress
-
-- [x] nrrd reader: need to reinstall the package using `pip install -e ".[all]"`
-    - you can directly drag and drop nrrd image now.
-- [x] clicking events detecting
-- [x] connect to HAT database: try hat viewer
-- [ ] image thresholding
-
 
 
 ## Installation
 
-You can install `top-hat` via [pip]:
+Currently top-hat support python 3.10~3.12. Other versions might work but haven't beed tested.
+Using this package in a virtual enviroment is recommened.
+Install [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) following their instruction.
 
-```
-pip install top-hat
-```
 
-If napari is not already installed, you can install `top-hat` with napari and Qt via:
-
+To create an enviroment and enter it:
+```bash
+conda create -n <env_name> python==3.12
+conda activate <env_name>
 ```
-pip install "top-hat[all]"
-```
-
+*you can replace `<env_name>` with any name you prefer.*
 
 To install latest development version :
+```
+pip install "git+https://github.com/Yiijee/top-hat.git#egg=top-hat[all]"
+```
+
+To clone this repo and make edits:
+```
+git clone https://github.com/Yiijee/top-hat.git
+cd top-hat
+git install -e ".[all]"
+```
+
+## Get started
+
+Open a terminal, run following codes to start a GUI. Note that `<env_name>` should be your own enviroment name.
 
 ```
-pip install git+https://github.com/Yiijee/top-hat.git
+conda activate <env_name>
+napari
 ```
+A napari user interface will appear. You can use plugin>Top HAT to select one of the modules from `hat viewer` or `top match`.
+You can drag-drop a **single channel, registered** nrrd or tif image into the user iterface to open it.
+
+### Top match
+
+Run a cellbody-tract matching with human in the loop. Documents to be updated.
+
+### Hat viewer
+
+Search and select existing hemilineage tracts, cellbody fiber or whole neurons, co-visualize with your registered image. You can save the tracts with JRC2018U template into an png or pdf file. Documents to be updated.
 
 
 

@@ -30,6 +30,7 @@ def count_voxels_in_hemilineage(
             desc="Counting overlap voxels:",
         )
     for target_name in iterable:
+        print(f"Voxel: Processing {target_name}...")
         target = loader.get_hat_bundles_nrrd(target_name)
         if target is not None:
             results[target_name] = count_voxels(query, target)

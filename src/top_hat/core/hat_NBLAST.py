@@ -22,6 +22,7 @@ def hat_nblast(
             desc="NBLAST",
         )
     for hat in iterable:
+        print(f"NBLAST: Processing {hat}...")
         hat_bundle = loader.get_hat_bundles_dps(hat, symmetry=True)
         hat_bundle = navis.make_dotprops(hat_bundle, k=100)
         if hat_bundle is not None:

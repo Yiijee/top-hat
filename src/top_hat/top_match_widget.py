@@ -2,9 +2,10 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtWidgets import QVBoxLayout, QWidget
 
-from .utils.qwidget_modules import (
+from .widgets import (
     ConnectionWidget,
     MatchingHatWidget,
+    ResultsLoaderWidget,
     SomaDetectionWidget,
     ThresholdWidget,
 )
@@ -23,19 +24,25 @@ class TopMatch(QWidget):
         self.connection_widget = ConnectionWidget()
         self.layout().addWidget(self.connection_widget)
 
-        # 2. Threshold Widget
+        # 2. Results Loader
+        self.results_loader_widget = ResultsLoaderWidget(self.viewer)
+        self.layout().addWidget(self.results_loader_widget)
+
+        # 3. Threshold Widget
         self.threshold_widget = ThresholdWidget(self.viewer)
         self.layout().addWidget(self.threshold_widget)
 
-        # 3. Soma Detection Widget
+        # 4. Soma Detection Widget
         self.soma_detection_widget = SomaDetectionWidget(self.viewer)
         self.layout().addWidget(self.soma_detection_widget)
 
-        # 4. Matching Hat Widget
-        self.matching_hat_widget = MatchingHatWidget(self.viewer)
+        # 5. Matching Hat Widget
+        self.matching_hat_widget = MatchingHatWidget(
+            self.viewer, self.soma_detection_widget
+        )
         self.layout().addWidget(self.matching_hat_widget)
 
-        # Connect the connection widget to the other widgets
+        # --- Connections ---
         self.connection_widget.connected.connect(
             self.soma_detection_widget.set_loader
         )
@@ -45,12 +52,9 @@ class TopMatch(QWidget):
         self.soma_detection_widget.matched.connect(
             self.matching_hat_widget.set_hemilineages
         )
-
-        # Placeholder for other functionalities
-        # self.combo_btn = QPushButton("Crazy Thursday V me fifty!!")
-        # self.combo_btn.clicked.connect(self.Your_Combo)
-        # self.layout().addWidget(self.combo_btn)
-
-    # def Your_Combo(self):
-    #     # Add your combo functionality here
-    #     pass
+        self.results_loader_widget.results_loaded.connect(
+            self.soma_detection_widget._on_results_loaded
+        )
+        self.results_loader_widget.results_loaded.connect(
+            self.matching_hat_widget._on_results_loaded
+        )

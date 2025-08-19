@@ -16,7 +16,7 @@ from qtpy.QtWidgets import (
 
 from .utils.colors import generate_random_hex_color
 from .utils.plotter import plot_tracts
-from .utils.qwidget_modules import ConnectionWidget
+from .widgets import ConnectionWidget
 
 if TYPE_CHECKING:
     import napari

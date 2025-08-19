@@ -55,6 +55,7 @@ class ResultsLoaderWidget(QWidget):
 
         self.status_label = QLabel("Status: Initializing...")
         self.status_label.setWordWrap(True)
+        self.status_label.setMaximumWidth(350)
 
         self.layout().addLayout(path_layout)
         self.layout().addWidget(self.status_label)

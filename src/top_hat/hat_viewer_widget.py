@@ -16,7 +16,7 @@ from qtpy.QtWidgets import (
 
 from .utils.colors import generate_random_hex_color
 from .utils.plotter import plot_tracts
-from .widgets import ConnectionWidget
+from .widgets import ConnectionWidget, ResultsLoaderWidget
 
 if TYPE_CHECKING:
     import napari
@@ -39,16 +39,17 @@ class HatViewer(QWidget):
         # 1. Data Connection
         self.connection_widget = ConnectionWidget()
         self.layout().addWidget(self.connection_widget)
-        self.connection_widget.connected.connect(
-            self._on_connection_status_changed
-        )
 
-        # 2. Data Type Selection
+        # 2. Results Loader
+        self.results_loader_widget = ResultsLoaderWidget(self.viewer)
+        self.layout().addWidget(self.results_loader_widget)
+
+        # 3. Data Type Selection
         self.data_type_combo = QComboBox()
         self.data_type_combo.addItems(["Whole neuron", "CBF", "Bundles"])
         self.layout().addWidget(self.data_type_combo)
 
-        # 3. Hemilineage Search and Selection
+        # 4. Hemilineage Search and Selection
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("Search for hemilineages...")
         self.hemilineage_list_widget = QListWidget()
@@ -58,7 +59,7 @@ class HatViewer(QWidget):
         self.layout().addWidget(self.search_box)
         self.layout().addWidget(self.hemilineage_list_widget)
 
-        # 4. Action Buttons
+        # 5. Action Buttons
         action_layout = QHBoxLayout()
         add_btn = QPushButton("Add Layers")
         clean_btn = QPushButton("Clean All")
@@ -69,10 +70,36 @@ class HatViewer(QWidget):
         self.layout().addLayout(action_layout)
 
         # --- Connections ---
+        self.connection_widget.connected.connect(
+            self._on_connection_status_changed
+        )
+        self.results_loader_widget.results_loaded.connect(
+            self._on_results_loaded
+        )
         add_btn.clicked.connect(self._on_add_layers)
         clean_btn.clicked.connect(self._on_clean_all)
         plot_btn.clicked.connect(self._on_plot_tracts)
         self.search_box.textChanged.connect(self._update_hemilineage_list)
+
+        # --- Initial Load ---
+        self.results_loader_widget.perform_initial_load()
+
+    def _on_results_loaded(self, df, path):
+        """Select hemilineages in the list that are in the loaded results."""
+        if df is None or df.empty:
+            self.hemilineage_list_widget.clearSelection()
+            return
+
+        if "Hemilineage" not in df.columns:
+            return
+
+        hemilineages_in_results = df["Hemilineage"].unique().tolist()
+        self.hemilineage_list_widget.clearSelection()
+
+        for i in range(self.hemilineage_list_widget.count()):
+            item = self.hemilineage_list_widget.item(i)
+            if item.text() in hemilineages_in_results:
+                item.setSelected(True)
 
     def _on_connection_status_changed(self, loader_instance):
         self.loader = loader_instance

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from napari.utils import progress
 from napari.utils.notifications import show_error, show_info, show_warning
 from qtpy.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QFileDialog,
     QHBoxLayout,
@@ -177,21 +178,34 @@ class HatViewer(QWidget):
             show_warning("No layers have been added to plot.")
             return
 
-        save_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "Save Tracts Plot",
-            "",
-            "Image Files (*.png);;PDF Files (*.pdf);;All Files (*)",
+        dialog = QFileDialog(self, "Save Tracts Plot")
+        dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+        dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        dialog.setNameFilter(
+            "Image Files (*.png);;PDF Files (*.pdf);;All Files (*)"
         )
-        if not save_path:
-            return
 
-        active_hemilineages = {}
-        for layer in self.added_layers:
-            if layer in self.viewer.layers:
-                active_hemilineages[layer.metadata["hemilineage"]] = (
-                    layer.colormap.name
-                )
+        # Add a checkbox to the dialog
+        checkbox = QCheckBox("Plot symmetrically", dialog)
+        dialog.layout().addWidget(checkbox)
 
-        plot_tracts(active_hemilineages, save_path, self.loader, progress)
-        show_info(f"Plotting saved to {save_path}")
+        if dialog.exec_():
+            save_path = dialog.selectedFiles()[0]
+            plot_symmetry = checkbox.isChecked()
+
+            active_hemilineages = {}
+            for layer in self.added_layers:
+                if layer in self.viewer.layers:
+                    active_hemilineages[layer.metadata["hemilineage"]] = (
+                        layer.colormap.name
+                    )
+
+            plot_tracts(
+                active_hemilineages,
+                save_path,
+                self.loader,
+                plot_symmetry,
+                progress,
+            )
+            show_info(f"Plotting saved to {save_path}")

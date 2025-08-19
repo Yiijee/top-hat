@@ -44,6 +44,25 @@ class ThresholdWidget(QWidget):
         # --- Connections ---
         self.threshold_btn.clicked.connect(self._on_threshold)
 
+    def reset(self):
+        """Reset the widget for a new query image."""
+        if "binarized_image" in self.viewer.layers:
+            self.viewer.layers.remove("binarized_image")
+
+        # Disconnect signals to avoid issues on reset
+        try:
+            self.threshold_slider.valueChanged.disconnect()
+            self.threshold_box.textChanged.disconnect()
+        except (TypeError, RuntimeError):
+            # In case they were never connected or already disconnected
+            pass
+
+        self.threshold_box.clear()
+        self.threshold_slider.setValue(0)
+        self.threshold_box.setEnabled(False)
+        self.threshold_slider.setEnabled(False)
+        self.is_initialized = False
+
     def _initialize_threshold(self):
         """
         Initialize threshold controls based on 'query_image'.

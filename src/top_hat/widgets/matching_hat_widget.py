@@ -64,13 +64,13 @@ class MatchingHatWidget(QWidget):
         self.match_button = QPushButton("Match")
         self.update_display_button = QPushButton("Update Display")
         self.save_button = QPushButton("Save Selected")
-        self.test_populate_button = QPushButton("Test Populate")
+        # self.test_populate_button = QPushButton("Test Populate")
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.match_button)
         button_layout.addWidget(self.update_display_button)
         button_layout.addWidget(self.save_button)
-        button_layout.addWidget(self.test_populate_button)
+        # button_layout.addWidget(self.test_populate_button)
 
         self.results_table = QTableWidget()
         self.results_table.setColumnCount(6)
@@ -89,11 +89,17 @@ class MatchingHatWidget(QWidget):
         self.match_button.clicked.connect(self._on_match)
         self.save_button.clicked.connect(self._on_save)
         self.update_display_button.clicked.connect(self._on_update_display)
-        self.test_populate_button.clicked.connect(self._on_test_populate)
+        # self.test_populate_button.clicked.connect(self._on_test_populate)
 
         self.viewer.layers.events.inserted.connect(self._on_layers_changed)
         self.viewer.layers.events.removed.connect(self._on_layers_changed)
         self._update_enabled_state()
+
+    def reset(self):
+        """Reset the widget for a new query image."""
+        self.hemilineage_input.clear()
+        self.results.clear()
+        self._populate_table()
 
     def _update_enabled_state(self):
         """Enable/disable widget based on dependencies."""
@@ -391,28 +397,28 @@ class MatchingHatWidget(QWidget):
                 else:
                     self.viewer.add_image(neurons, **layer_kwargs)
 
-    def _on_test_populate(self):
-        """Generate pseudo-data to test table population."""
-        import random
+    # def _on_test_populate(self):
+    #     """Generate pseudo-data to test table population."""
+    #     import random
 
-        pseudo_results = {}
-        hemilineages = [
-            "00B",
-            "01A",
-            "01B",
-            "02A",
-            "02B",
-            "03A",
-            "03B",
-            "04A",
-            "04B",
-            "05A",
-        ]
-        for h in hemilineages:
-            pseudo_results[h] = {
-                "voxel": random.uniform(0, 100),
-                "nblast": random.uniform(-1, 1),
-            }
-        self.results = pseudo_results
-        self._populate_table()
-        show_info("Populated table with pseudo-data.")
+    #     pseudo_results = {}
+    #     hemilineages = [
+    #         "00B",
+    #         "01A",
+    #         "01B",
+    #         "02A",
+    #         "02B",
+    #         "03A",
+    #         "03B",
+    #         "04A",
+    #         "04B",
+    #         "05A",
+    #     ]
+    #     for h in hemilineages:
+    #         pseudo_results[h] = {
+    #             "voxel": random.uniform(0, 100),
+    #             "nblast": random.uniform(-1, 1),
+    #         }
+    #     self.results = pseudo_results
+    #     self._populate_table()
+    #     show_info("Populated table with pseudo-data.")

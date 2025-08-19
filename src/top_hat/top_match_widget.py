@@ -58,3 +58,32 @@ class TopMatch(QWidget):
         self.results_loader_widget.results_loaded.connect(
             self.matching_hat_widget._on_results_loaded
         )
+        self.results_loader_widget.results_loaded.connect(
+            self.matching_hat_widget._on_results_loaded
+        )
+        self.viewer.layers.events.inserted.connect(
+            self._on_new_query_image
+        )  # Add this line
+
+        # --- Perform Initial Load ---
+        # This must be done after all connections are established
+        self.results_loader_widget.perform_initial_load()
+
+    def _on_new_query_image(self, event):
+        """
+        A new layer has been inserted. If it's a new 'query_image',
+        reset the application state.
+        """
+        layer = event.value
+        if layer.name == "query_image [1]":
+            # Remove all layers except the new query_image
+            for lyr in list(self.viewer.layers):
+                if lyr.name != "query_image [1]":
+                    self.viewer.layers.remove(lyr)
+            # rename the new layer
+            layer.name = "query_image"
+
+            # Reset the widgets
+            self.threshold_widget.reset()
+            self.soma_detection_widget.reset()
+            self.matching_hat_widget.reset()

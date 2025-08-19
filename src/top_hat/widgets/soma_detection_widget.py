@@ -35,6 +35,10 @@ class SomaDetectionWidget(QWidget):
         self.info_label = QLabel(
             "Select points in the viewer to record (z, y, x) coordinates."
         )
+        # initiate LM centroids layer
+        self.viewer.add_points(
+            name="LM_centroid", size=15, face_color="red", ndim=3
+        )
         self.layout().addWidget(self.info_label)
 
         self.points_layer = self.viewer.add_points(
@@ -50,6 +54,18 @@ class SomaDetectionWidget(QWidget):
         self.viewer.layers.events.inserted.connect(self._on_layers_changed)
         self.viewer.layers.events.removed.connect(self._on_layers_changed)
         self._update_enabled_state()
+
+    def reset(self):
+        """Reset the widget to its initial state."""
+        if "Selected Points" in self.viewer.layers:
+            self.viewer.layers["Selected Points"].data = []
+        if "LM_centroid" in self.viewer.layers:
+            self.viewer.layers["LM_centroid"].data = []
+        self.manual_centroid = None
+        self.last_matched_hemilineages = None
+        self.info_label.setText(
+            "Select points in the viewer to record (z, y, x) coordinates."
+        )
 
     def _update_enabled_state(self):
         """Enable/disable widget based on dependencies."""
@@ -77,20 +93,23 @@ class SomaDetectionWidget(QWidget):
 
     def _on_results_loaded(self, df, path):
         """Handle loaded results, adding centroids to the viewer."""
+        print("Results loaded is triggered for soma detection")
         self.results_df = df
         self._update_enabled_state()
         if df is not None and "query_centroid" in df.columns:
             centroids = []
             for _, row in df.iterrows():
                 centroid_str = row["query_centroid"]
+                print(centroid_str)
                 if isinstance(centroid_str, str):
                     try:
                         # Assuming format "[z, y, x]"
                         coords = [
                             float(c.strip())
-                            for c in centroid_str.strip("[]").split(",")
+                            for c in centroid_str.strip("()").split(",")
                         ]
-                        centroids.append(coords)
+                        mirror_coords = _JRC2018U_mirror(coords[::-1])[::-1]
+                        centroids.extend([coords, mirror_coords])
                     except (ValueError, IndexError):
                         continue  # Skip malformed entries
 

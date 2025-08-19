@@ -65,6 +65,11 @@ class ResultsLoaderWidget(QWidget):
         self.viewer.layers.events.inserted.connect(self._on_layers_changed)
         self.viewer.layers.events.removed.connect(self._on_layers_changed)
 
+    def perform_initial_load(self):
+        """
+        Perform the initial check for a query_image and load its results.
+        This should be called after all signal/slot connections are established.
+        """
         # --- Initial State ---
         self._on_layers_changed()  # Check for existing query_image
         if self.results_df is None:

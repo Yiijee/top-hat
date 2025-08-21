@@ -43,6 +43,7 @@ class MatchingHatWidget(QWidget):
         self.loader = None
         self.results_df = None
         self.results_path = None
+        self.last_matched_hemilineages = []
 
         self.setLayout(QVBoxLayout())
 
@@ -70,6 +71,10 @@ class MatchingHatWidget(QWidget):
         button_layout.addWidget(self.update_display_button)
         button_layout.addWidget(self.save_button)
 
+        self.show_recent_only_checkbox = QCheckBox(
+            "Show only most recent results"
+        )
+
         self.results_table = QTableWidget()
         self.results_table.setColumnCount(6)
         self.results_table.setHorizontalHeaderLabels(
@@ -88,12 +93,14 @@ class MatchingHatWidget(QWidget):
         self.layout().addWidget(self.hemilineage_input)
         self.layout().addLayout(checkbox_layout)
         self.layout().addLayout(button_layout)
+        self.layout().addWidget(self.show_recent_only_checkbox)
         self.layout().addWidget(self.results_table)
 
         # --- Connections ---
         self.match_button.clicked.connect(self._on_match)
         self.save_button.clicked.connect(self._on_save)
         self.update_display_button.clicked.connect(self._on_update_display)
+        self.show_recent_only_checkbox.toggled.connect(self._on_display_toggle)
 
         self.viewer.layers.events.inserted.connect(self._on_layers_changed)
         self.viewer.layers.events.removed.connect(self._on_layers_changed)
@@ -102,6 +109,8 @@ class MatchingHatWidget(QWidget):
     def reset(self):
         """Reset the widget for a new query image."""
         self.hemilineage_input.clear()
+        self.last_matched_hemilineages = []
+        self.show_recent_only_checkbox.setChecked(False)
         if self.results_df is not None:
             self.results_df = None
         self._populate_table()
@@ -120,6 +129,9 @@ class MatchingHatWidget(QWidget):
         self.save_button.setEnabled(enabled)
         self.update_display_button.setEnabled(enabled)
         self.hemilineage_input.setEnabled(enabled)
+        self.show_recent_only_checkbox.setEnabled(
+            enabled and bool(self.last_matched_hemilineages)
+        )
 
     def _on_layers_changed(self, event):
         """Respond to changes in viewer layers."""
@@ -134,6 +146,11 @@ class MatchingHatWidget(QWidget):
         """Set the hemilineage input text."""
         self.hemilineage_input.setText("\n".join(hemilineages))
 
+    def _on_display_toggle(self):
+        """Handle the toggle switch for the results display."""
+        self._on_save()
+        self._populate_table()
+
     def _on_save(self):
         """
         Update the results DataFrame with the current statuses from the table
@@ -145,7 +162,10 @@ class MatchingHatWidget(QWidget):
 
         # Update the DataFrame from the table
         for row_idx in range(self.results_table.rowCount()):
-            hemilineage = self.results_table.item(row_idx, 0).text()
+            hemilineage_item = self.results_table.item(row_idx, 0)
+            if not hemilineage_item:
+                continue
+            hemilineage = hemilineage_item.text()
             status_combo = self.results_table.cellWidget(row_idx, 5)
             if status_combo:
                 status = status_combo.currentText()
@@ -164,6 +184,8 @@ class MatchingHatWidget(QWidget):
     def _on_results_loaded(self, results_df, results_path):
         self.results_df = results_df
         self.results_path = results_path
+        self.last_matched_hemilineages = []
+        self.show_recent_only_checkbox.setChecked(False)
         self._update_enabled_state()
         self._populate_table()
 
@@ -197,7 +219,11 @@ class MatchingHatWidget(QWidget):
         if not hemilineages_to_process:
             show_info("No hemilineages specified to match.")
             return
-
+        # track recent hemilineage input
+        self.last_matched_hemilineages = hemilineages_to_process
+        print(f"last matched hemilineages: {self.last_matched_hemilineages}")
+        self.show_recent_only_checkbox.setChecked(True)
+        self._update_enabled_state()
         # Filter for hemilineages that need matching
         hemilineages_to_run = []
         for h in hemilineages_to_process:
@@ -219,6 +245,7 @@ class MatchingHatWidget(QWidget):
 
         if not hemilineages_to_run:
             show_info("All specified hemilineages have up-to-date scores.")
+            self._populate_table()
             return
 
         # Run Voxel Counting
@@ -286,9 +313,24 @@ class MatchingHatWidget(QWidget):
         if self.results_df is None:
             return
 
-        self.results_table.setRowCount(len(self.results_df))
+        if (
+            self.show_recent_only_checkbox.isChecked()
+            and self.last_matched_hemilineages
+        ):
+            df_to_display = self.results_df[
+                self.results_df["Hemilineage"].isin(
+                    self.last_matched_hemilineages
+                )
+            ].copy()
+            df_to_display.reset_index(inplace=True)
+            print("Displaying recent matching results:")
+            print(df_to_display.head())
+        else:
+            df_to_display = self.results_df
 
-        for row_idx, row_data in self.results_df.iterrows():
+        self.results_table.setRowCount(len(df_to_display))
+
+        for row_idx, row_data in df_to_display.iterrows():
             name = row_data["Hemilineage"]
             self.results_table.setItem(row_idx, 0, QTableWidgetItem(name))
 

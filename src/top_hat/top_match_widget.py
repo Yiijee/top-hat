@@ -87,7 +87,7 @@ class TopMatch(QWidget):
             layer.name = "query_image"
 
             # Reset the widgets
-            self.results_loader_widget.reset()
             self.threshold_widget.reset()
             self.soma_detection_widget.reset()
             self.matching_hat_widget.reset()
+            self.results_loader_widget.reset()

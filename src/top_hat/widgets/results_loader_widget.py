@@ -75,7 +75,7 @@ class ResultsLoaderWidget(QWidget):
         self.status_label.setText("Status: Initializing...")
         self.results_df = None
         self.results_path = None
-        self._on_layers_changed(update_status=True)
+        self._on_layers_changed()
 
     def set_loader(self, loader_instance):
         """Set the data loader."""
@@ -90,8 +90,9 @@ class ResultsLoaderWidget(QWidget):
         # if self.results_df is None or self.results_df.empty:
         #     self._on_layers_changed()  # Check for existing query_image
         print("performing initial loading...")
-        if self.results_df is None:
-            self._on_layers_changed(update_status=True)
+        self.results_df = None
+        self.results_path = None
+        self._on_layers_changed()
 
     def _on_layers_changed(self, event=None):
         """

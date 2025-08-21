@@ -29,6 +29,18 @@ and review the napari docs for plugin developers:
 https://napari.org/stable/plugins/index.html
 -->
 
+## Most recent updates
+Top match:
+- Matching results table:
+    - Add status for each row. Status including "accept", "reject", "not_reviewed" and "unsure"
+    - User can choose to display the most recent matching results or display all matching results.
+- Mathcing performance:
+    - If threshold is not changed and there is already a matching sore for a query hemilineage, will directly load scores instead of running matching again.
+
+Top viewer:
+- Matching results filter:
+    - If a matching results table is loaded, user can filter the displaying hemilineage by status. Status is selected from "accept", "reject", "not_reviewed", "unsure" and "all"
+
 
 
 ## Installation

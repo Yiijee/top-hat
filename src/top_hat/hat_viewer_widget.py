@@ -3,9 +3,11 @@ from typing import TYPE_CHECKING
 from napari.utils import progress
 from napari.utils.notifications import show_error, show_info, show_warning
 from qtpy.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QFileDialog,
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
@@ -31,6 +33,7 @@ class HatViewer(QWidget):
         super().__init__()
         self.viewer = viewer
         self.loader = None
+        self.results_df = None
         self.added_layers = []
 
         # --- UI Setup ---
@@ -44,10 +47,28 @@ class HatViewer(QWidget):
         self.results_loader_widget = ResultsLoaderWidget(self.viewer)
         self.layout().addWidget(self.results_loader_widget)
 
+        # 2.5 Status Filter
+        status_layout = QHBoxLayout()
+        status_layout.addWidget(QLabel("Status:"))
+        self.status_filter_combo = QComboBox()
+        self.status_filter_combo.addItems(
+            ["accept", "reject", "unsure", "not_reviewed", "All"]
+        )
+        self.status_filter_combo.setCurrentText("accept")
+        self.filter_btn = QPushButton("Filter")
+        status_layout.addWidget(self.status_filter_combo)
+        status_layout.addWidget(self.filter_btn)
+        self.layout().addLayout(status_layout)
+        self.status_filter_combo.setEnabled(False)
+        self.filter_btn.setEnabled(False)
+
         # 3. Data Type Selection
+        data_type_layout = QHBoxLayout()
+        data_type_layout.addWidget(QLabel("Data Type:"))
         self.data_type_combo = QComboBox()
         self.data_type_combo.addItems(["Whole neuron", "CBF", "Bundles"])
-        self.layout().addWidget(self.data_type_combo)
+        data_type_layout.addWidget(self.data_type_combo)
+        self.layout().addLayout(data_type_layout)
 
         # 4. Hemilineage Search and Selection
         self.search_box = QLineEdit()
@@ -76,6 +97,7 @@ class HatViewer(QWidget):
         self.results_loader_widget.results_loaded.connect(
             self._on_results_loaded
         )
+        self.filter_btn.clicked.connect(self._update_hemilineage_list)
         add_btn.clicked.connect(self._on_add_layers)
         clean_btn.clicked.connect(self._on_clean_all)
         plot_btn.clicked.connect(self._on_plot_tracts)
@@ -85,21 +107,22 @@ class HatViewer(QWidget):
         self.results_loader_widget.perform_initial_load()
 
     def _on_results_loaded(self, df, path):
-        """Select hemilineages in the list that are in the loaded results."""
-        if df is None or df.empty:
-            self.hemilineage_list_widget.clearSelection()
-            return
+        """
+        Callback for when results are loaded from the file.
+        """
+        self.results_df = df
+        print(self.results_df)
+        # First, set the state of the filter controls
+        if self.results_df is not None and not self.results_df.empty:
+            print("Results DataFrame loaded successfully.")
+            self.status_filter_combo.setEnabled(True)
+            self.filter_btn.setEnabled(True)
+        else:
+            self.status_filter_combo.setEnabled(False)
+            self.filter_btn.setEnabled(False)
 
-        if "Hemilineage" not in df.columns:
-            return
-
-        hemilineages_in_results = df["Hemilineage"].unique().tolist()
-        self.hemilineage_list_widget.clearSelection()
-
-        for i in range(self.hemilineage_list_widget.count()):
-            item = self.hemilineage_list_widget.item(i)
-            if item.text() in hemilineages_in_results:
-                item.setSelected(True)
+        # Now, update the list based on the new state
+        self._update_hemilineage_list()
 
     def _on_connection_status_changed(self, loader_instance):
         self.loader = loader_instance
@@ -107,16 +130,38 @@ class HatViewer(QWidget):
             self._update_hemilineage_list()
 
     def _update_hemilineage_list(self):
-        """Update the list of hemilineages based on search text."""
+        """
+        Update the list of hemilineages based on search text and status filter.
+        """
         self.hemilineage_list_widget.clear()
         if not self.loader:
             return
 
-        search_text = self.search_box.text().lower()
-        all_hemilineages = self.loader.get_hemilineage_list()
+        # Determine the base list of hemilineages
+        base_hemilineages = []
+        filter_active = self.filter_btn.isEnabled()
 
+        if filter_active and self.results_df is not None:
+            selected_status = self.status_filter_combo.currentText()
+            if selected_status == "All":
+                base_hemilineages = (
+                    self.results_df["Hemilineage"].unique().tolist()
+                )
+            else:
+                base_hemilineages = (
+                    self.results_df[
+                        self.results_df["status"] == selected_status
+                    ]["Hemilineage"]
+                    .unique()
+                    .tolist()
+                )
+        else:
+            base_hemilineages = self.loader.get_hemilineage_list()
+
+        # Filter by search text
+        search_text = self.search_box.text().lower()
         filtered_list = [
-            name for name in all_hemilineages if search_text in name.lower()
+            name for name in base_hemilineages if search_text in name.lower()
         ]
 
         for name in filtered_list:
@@ -177,21 +222,34 @@ class HatViewer(QWidget):
             show_warning("No layers have been added to plot.")
             return
 
-        save_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "Save Tracts Plot",
-            "",
-            "Image Files (*.png);;PDF Files (*.pdf);;All Files (*)",
+        dialog = QFileDialog(self, "Save Tracts Plot")
+        dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+        dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        dialog.setNameFilter(
+            "Image Files (*.png);;PDF Files (*.pdf);;All Files (*)"
         )
-        if not save_path:
-            return
 
-        active_hemilineages = {}
-        for layer in self.added_layers:
-            if layer in self.viewer.layers:
-                active_hemilineages[layer.metadata["hemilineage"]] = (
-                    layer.colormap.name
-                )
+        # Add a checkbox to the dialog
+        checkbox = QCheckBox("Plot symmetrically", dialog)
+        dialog.layout().addWidget(checkbox)
 
-        plot_tracts(active_hemilineages, save_path, self.loader, progress)
-        show_info(f"Plotting saved to {save_path}")
+        if dialog.exec_():
+            save_path = dialog.selectedFiles()[0]
+            plot_symmetry = checkbox.isChecked()
+
+            active_hemilineages = {}
+            for layer in self.added_layers:
+                if layer in self.viewer.layers:
+                    active_hemilineages[layer.metadata["hemilineage"]] = (
+                        layer.colormap.name
+                    )
+
+            plot_tracts(
+                active_hemilineages,
+                save_path,
+                self.loader,
+                plot_symmetry,
+                progress,
+            )
+            show_info(f"Plotting saved to {save_path}")

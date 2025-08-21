@@ -108,10 +108,9 @@ class SomaDetectionWidget(QWidget):
             centroids = []
             for _, row in df.iterrows():
                 centroid_str = row["query_centroid"]
-                print(centroid_str)
                 if isinstance(centroid_str, str):
                     try:
-                        # Assuming format "[z, y, x]"
+                        # Assuming format "(z, y, x)"
                         coords = [
                             float(c.strip())
                             for c in centroid_str.strip("()").split(",")

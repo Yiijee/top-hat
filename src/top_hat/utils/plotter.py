@@ -10,6 +10,7 @@ def plot_tracts(
     active_hemilineages: dict[str, str],
     output_path: Path,
     loader: any,
+    plot_symmetry: bool = False,
     progress_wrapper: any = None,
 ):
     """
@@ -33,7 +34,12 @@ def plot_tracts(
     tract_nl = []
     color_list = []
     for hemilineage, color in iterable:
-        tract = loader._get_data(hemilineage, "_hat_bundles.pkl", "pkl")
+        if plot_symmetry:
+            tract = loader._get_data(
+                hemilineage, "_hat_bundles_sym.pkl", "pkl"
+            )
+        else:
+            tract = loader._get_data(hemilineage, "_hat_bundles.pkl", "pkl")
         tract = navis.make_dotprops(tract, k=100, resample=0.5)
         tract = navis.drop_fluff(tract, n_largest=2)
         tract_nl.append(tract.to_skeleton(1))

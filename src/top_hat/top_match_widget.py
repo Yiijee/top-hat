@@ -44,6 +44,9 @@ class TopMatch(QWidget):
 
         # --- Connections ---
         self.connection_widget.connected.connect(
+            self.results_loader_widget.set_loader
+        )
+        self.connection_widget.connected.connect(
             self.soma_detection_widget.set_loader
         )
         self.connection_widget.connected.connect(
@@ -84,6 +87,7 @@ class TopMatch(QWidget):
             layer.name = "query_image"
 
             # Reset the widgets
+            self.results_loader_widget.reset()
             self.threshold_widget.reset()
             self.soma_detection_widget.reset()
             self.matching_hat_widget.reset()

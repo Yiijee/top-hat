@@ -81,10 +81,10 @@ class FAFB_loader:
         ]
         # To-do: update the naming system of the files
 
-        iterable = self.hemilineage_list
+        iterable = self.hemilineage_list[0::10]
         if progress_wrapper:
             iterable = progress_wrapper(
-                self.hemilineage_list,
+                iterable,
                 desc="Validating dataset:",
             )
 

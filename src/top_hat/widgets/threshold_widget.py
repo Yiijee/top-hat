@@ -84,7 +84,7 @@ class ThresholdWidget(QWidget):
                 lambda v: self.threshold_box.setText(str(v))
             )
             self.threshold_box.textChanged.connect(
-                lambda t: self.threshold_slider.setValue(int(float(t)))
+                lambda t: self.threshold_slider.setValue(int(float(t.strip())))
             )
 
             # Enable controls

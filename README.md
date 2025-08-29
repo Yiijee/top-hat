@@ -9,13 +9,9 @@
 [![npe2](https://img.shields.io/badge/plugin-npe2-blue?link=https://napari.org/stable/plugins/index.html)](https://napari.org/stable/plugins/index.html)
 [![Copier](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/copier-org/copier/master/img/badge/badge-grayscale-inverted-border-purple.json)](https://github.com/copier-org/copier)
 
-Mapping hemilineage associate tracts in light microscopy images.
+Mapping hemilineage-associated tracts in light microscopy images.
 
-This tool is still under developing and only avaible for Clowney lab internal use.
-
-To-do:
-- [ ] Complete documentation
-- [ ] Release the first version
+This tool is still under development and is currently only available for Clowney Lab internal use.
 
 ----------------------------------
 
@@ -42,18 +38,18 @@ Top viewer:
 - Matching results filter:
     - If a matching results table is loaded, user can filter the displaying hemilineage by status. Status is selected from "accept", "reject", "not_reviewed", "unsure" and "all"
 
-Note: The old results csv file might not compatable with new tool. Try to rename the old results file so they will not be detected and loaded.
+Note: Old results CSV files may not be compatible with the new tool. Please rename old results files to prevent them from being automatically detected and loaded.
 
 
 
 ## Installation
 
-Currently top-hat support python 3.10~3.12. Other versions might work but haven't beed tested.
-Using this package in a virtual enviroment is recommened.
-Install [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) following their instruction.
+Currently, top-hat supports Python 3.10-3.12. Other versions might work but have not been tested.
+Using this package in a virtual environment is recommended.
+Install [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) following their instructions.
 
 
-To create an enviroment and enter it:
+To create an environment and enter it:
 ```bash
 conda create -n <env_name> python==3.12
 conda activate <env_name>
@@ -69,27 +65,34 @@ To clone this repo and make edits:
 ```
 git clone https://github.com/Yiijee/top-hat.git
 cd top-hat
-git install -e ".[all]"
+pip install -e ".[all]"
 ```
 
 ## Get started
 
-Open a terminal, run following codes to start a GUI. Note that `<env_name>` should be your own enviroment name.
+Open a terminal and run the following commands to start the GUI. Note that `<env_name>` should be your own environment name.
 
 ```
 conda activate <env_name>
 napari
 ```
-A napari user interface will appear. You can use plugin>Top HAT to select one of the modules from `hat viewer` or `top match`.
-You can drag-drop a **single channel, registered** nrrd or tif image into the user iterface to open it.
+The napari user interface will appear. You can then navigate to **Plugins > Top HAT** to select either the `HAT viewer` or `top match` module.
+
+You can drag and drop a **single-channel, registered** .nrrd or .tif image into the user interface to open it.
+
+>Check [this document](https://github.com/Yiijee/flybrain_registration/blob/main/GL_cmtk_code/GL_warp_batch_JRC2018U_usage.md) about registration codes.
 
 ### Top match
 
-Run a cellbody-tract matching with human in the loop. Documents to be updated.
+Run a cell-body-tract matching process with a human-in-the-loop. Check [Top Match tutorial](top_match.md) for details.
+
+<img src="figures/top_match_overview.png" alt="Top Match initial interface" width="100%">
 
 ### Hat viewer
 
-Search and select existing hemilineage tracts, cellbody fiber or whole neurons, co-visualize with your registered image. You can save the tracts with JRC2018U template into an png or pdf file. Documents to be updated.
+Search for and select existing hemilineage tracts, cell body fibers, or whole neurons, and co-visualize them with your registered image. You can save the tracts with the JRC2018U template into a .png or .pdf file. Check [HAT viewer tutorial](hat_viewer.md) for details.
+
+<img src="figures/hat_viewer_initial.png" alt="HAT Viewer initial interface" width="100%">
 
 
 

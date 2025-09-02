@@ -1,5 +1,3 @@
-# src/top_hat/utils/plotter.py
-
 from pathlib import Path
 
 import matplotlib.pyplot as plt

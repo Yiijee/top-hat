@@ -1,21 +1,21 @@
-# Top Match Widget Usage Guide
+# Hi Match Widget Usage Guide
 
-This guide explains how to use the **Top Match** module of Hi-HAT to interactively match hemilineages from a light microscopy image.
+This guide explains how to use the **Hi Match** module of Hi-HAT to interactively match hemilineages from a light microscopy image.
 
 ## Overview
 
-**Top Match** provides a graphical user interface powered by [NBLAST](https://navis-org.github.io/navis/generated/gallery/5_nblast/tutorial_nblast_00_intro/) to match hemilineages. Cell body location and tract morphology are the key features used to identify a hemilineage in the drosophila brain. A user can load a registered query image into Top Match, and candidate hemilineages will be ranked based on a combination of both features, ready for real-time proofreading.
+**Hi Match** provides a graphical user interface powered by [NBLAST](https://navis-org.github.io/navis/generated/gallery/5_nblast/tutorial_nblast_00_intro/) to match hemilineages. Cell body location and tract morphology are the key features used to identify a hemilineage in the drosophila brain. A user can load a registered query image into Hi Match, and candidate hemilineages will be ranked based on a combination of both features, ready for real-time proofreading.
 
 Below is a general summary of workflow and corresponding widgets.
 
-<img src="figures/top_match_overview.png" alt="Top Match initial interface" width="100%">
+<img src="figures/top_match_overview.png" alt="Hi Match initial interface" width="100%">
 
 There are two major sections:
 
 1.  **Initialization** (steps [1](#1-connecting-to-data), [2](#2-loading-results), [3](#3-threshold), less than 1 min): These steps are required every time you start napari. They include connecting to the FAFB hemilineage map database, automatically loading saved progress, and thresholding the image.
-2.  **Proofreading Cycle** (steps [4](#4-cet-cluster-centriod), [5](#5-target-hemilineages-editing-box), [6](#6-mathcing), [7](#7-results-table), [8](#8-displaying-results), [9](#9-save-results), 5-10 min): These widgets are activated once Top Match is initiated properly. In each proofreading cycle, you will click on a cell body cluster, and proximal hemilineages will be added for voxel/NBLAST comparison. A results table ([7](#7-results-table)) will display hemilineages ranked by matching score, and you can load selected ones to co-visualize with the query image. After proofreading, update the hemilineages' reviewing status and save the progress. Then, you can click on a different cell body cluster to start a new cycle.
+2.  **Proofreading Cycle** (steps [4](#4-cet-cluster-centriod), [5](#5-target-hemilineages-editing-box), [6](#6-mathcing), [7](#7-results-table), [8](#8-displaying-results), [9](#9-save-results), 5-10 min): These widgets are activated once Hi Match is initiated properly. In each proofreading cycle, you will click on a cell body cluster, and proximal hemilineages will be added for voxel/NBLAST comparison. A results table ([7](#7-results-table)) will display hemilineages ranked by matching score, and you can load selected ones to co-visualize with the query image. After proofreading, update the hemilineages' reviewing status and save the progress. Then, you can click on a different cell body cluster to start a new cycle.
 
->Note: For the current version, it's generally good practice to initiate Top Match first and then load the image.
+>Note: For the current version, it's generally good practice to initiate Hi Match first and then load the image.
 
 Detailed instructions for each step is shown below:
 
@@ -33,7 +33,7 @@ Before using other widgets, you must connect to the connectome hemilineage tract
 
 ### 2. Loading results
 
-By default, Top Match will create an empty results table for each query image and save it to the specified save path along with the image. The results table will be named `[image_name]_results.csv`. It contains the following columns:
+By default, Hi Match will create an empty results table for each query image and save it to the specified save path along with the image. The results table will be named `[image_name]_results.csv`. It contains the following columns:
 - **Hemilineage**: The hemilineage name in Ito-Lee style.
 - *query_centroid*: The centroid coordinates of cell body clusters in the format (z, y, x microns). This is for saving progress.
 - *time_stamp*: The last time the matching score was updated.
@@ -62,7 +62,7 @@ A binary image is required for both voxel matching and NBLAST matching. You can 
 
 *This widget will be active if steps 1-3 are completed.*
 
-This widget can search for potential target hemilineages based on the proximity of cell bodies. Top Match calculates a searching radius for each hemilineage based on its cell body distribution. The radius is calculated as 3x the Root Sum of Squares of Error of the cell bodies and their mirrored counterparts on the contralateral side.
+This widget can search for potential target hemilineages based on the proximity of cell bodies. Hi Match calculates a searching radius for each hemilineage based on its cell body distribution. The radius is calculated as 3x the Root Sum of Squares of Error of the cell bodies and their mirrored counterparts on the contralateral side.
 
 <img src="figures/hat_match_cellbody_query_scheme.png" alt="Cell body matching scheme" width="60%">
 
@@ -84,7 +84,7 @@ Proximal hemilineages from [step 4](#4-get-cluster-centroid) will be added into 
 
 *This widget will be active if steps 1-3 are completed.*
 
-There are two methods of matching, as described in [step 2](#2-loading-results). Note that voxel matching is likely to have false-negative results if the tract is thin or slightly variable across brains. NBLAST compensates for this but is sensitive to noise if the image background is high. The NBLAST matching might take 1-2 minutes if you are running Top Match on a decent computer. Check the terminal or command-line tool for progress.
+There are two methods of matching, as described in [step 2](#2-loading-results). Note that voxel matching is likely to have false-negative results if the tract is thin or slightly variable across brains. NBLAST compensates for this but is sensitive to noise if the image background is high. The NBLAST matching might take 1-2 minutes if you are running Hi Match on a decent computer. Check the terminal or command-line tool for progress.
 
 -   **Usage**: Check the type of matching you want to run (by default, both are selected), then click **Matching**.
 

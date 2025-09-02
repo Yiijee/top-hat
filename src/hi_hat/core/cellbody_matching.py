@@ -1,5 +1,3 @@
-# src/top_hat/core/cellbody_matching.py
-
 import numpy as np
 
 

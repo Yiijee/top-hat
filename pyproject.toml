@@ -53,7 +53,7 @@ testing = [
 ]
 
 [project.entry-points."napari.manifest"]
-hi-hat = "top_hat:napari.yaml"
+hi-hat = "hi_hat:napari.yaml"
 
 [project.urls]
 "Bug Tracker" = "https://github.com/Yiijee/hi-hat/issues"
@@ -75,7 +75,7 @@ where = ["src"]
 "*" = ["*.yaml"]
 
 [tool.setuptools_scm]
-write_to = "src/top_hat/_version.py"
+write_to = "src/hi_hat/_version.py"
 fallback_version = "0.0.1+nogit"
 
 [tool.black]

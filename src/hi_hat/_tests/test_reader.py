@@ -1,4 +1,4 @@
-from top_hat import napari_get_reader
+from hi_hat import napari_get_reader
 
 
 # tmp_path is a pytest fixture

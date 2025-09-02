@@ -1,4 +1,4 @@
-# from top_hat._widget import (
+# from hi_hat._widget import (
 #     ExampleQWidget,
 #     ImageThreshold,
 #     threshold_autogenerate_widget,

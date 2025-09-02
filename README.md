@@ -27,18 +27,11 @@ https://napari.org/stable/plugins/index.html
 
 ## Most recent updates
 
-Top match:
-- Matching results table:
-    - Add status for each row. Status including "accept", "reject", "not_reviewed" and "unsure"
-    - User can choose to display the most recent matching results or display all matching results.
-- Mathcing performance:
-    - If threshold is not changed and there is already a matching sore for a query hemilineage, will directly load scores instead of running matching again.
+Rename the project from top-HAT to Hi-HAT.
 
-Top viewer:
-- Matching results filter:
-    - If a matching results table is loaded, user can filter the displaying hemilineage by status. Status is selected from "accept", "reject", "not_reviewed", "unsure" and "all"
+Rename top match to Hi Match.
 
-Note: Old results CSV files may not be compatible with the new tool. Please rename old results files to prevent them from being automatically detected and loaded.
+Need to install this package again using pip.
 
 
 
@@ -76,19 +69,19 @@ Open a terminal and run the following commands to start the GUI. Note that `<env
 conda activate <env_name>
 napari
 ```
-The napari user interface will appear. You can then navigate to **Plugins > Hi-HAT** to select either the `HAT viewer` or `top match` module.
+The napari user interface will appear. You can then navigate to **Plugins > Hi-HAT** to select either the `HAT viewer` or `Hi Match` module.
 
 You can drag and drop a **single-channel, registered** .nrrd or .tif image into the user interface to open it.
 
 >Check [this document](https://github.com/Yiijee/flybrain_registration/blob/main/GL_cmtk_code/GL_warp_batch_JRC2018U_usage.md) about registration codes.
 
-### Top match
+### Hi Match
 
-Run a cell-body-tract matching process with a human-in-the-loop. Check [Top Match tutorial](top_match.md) for details.
+Run a cell-body-tract matching process with a human-in-the-loop. Check [Hi Match tutorial](hi_match.md) for details.
 
 <img src="figures/top_match_overview.png" alt="Top Match initial interface" width="100%">
 
-### Hat viewer
+### HAT Viewer
 
 Search for and select existing hemilineage tracts, cell body fibers, or whole neurons, and co-visualize them with your registered image. You can save the tracts with the JRC2018U template into a .png or .pdf file. Check [HAT viewer tutorial](hat_viewer.md) for details.
 
@@ -97,33 +90,3 @@ Search for and select existing hemilineage tracts, cell body fibers, or whole ne
 
 
 ## Contributing
-
-Contributions are very welcome. Tests can be run with [tox], please ensure
-the coverage at least stays the same before you submit a pull request.
-
-## License
-
-Distributed under the terms of the [MIT] license,
-"Hi-HAT" is free and open source software
-
-## Issues
-
-If you encounter any problems, please [file an issue] along with a detailed description.
-
-[napari]: https://github.com/napari/napari
-[copier]: https://copier.readthedocs.io/en/stable/
-[@napari]: https://github.com/napari
-[MIT]: http://opensource.org/licenses/MIT
-[BSD-3]: http://opensource.org/licenses/BSD-3-Clause
-[GNU GPL v3.0]: http://www.gnu.org/licenses/gpl-3.0.txt
-[GNU LGPL v3.0]: http://www.gnu.org/licenses/lgpl-3.0.txt
-[Apache Software License 2.0]: http://www.apache.org/licenses/LICENSE-2.0
-[Mozilla Public License 2.0]: https://www.mozilla.org/media/MPL/2.0/index.txt
-[napari-plugin-template]: https://github.com/napari/napari-plugin-template
-
-[file an issue]: https://github.com/Yiijee/hi-hat/issues
-
-[napari]: https://github.com/napari/napari
-[tox]: https://tox.readthedocs.io/en/latest/
-[pip]: https://pypi.org/project/pip/
-[PyPI]: https://pypi.org/

@@ -7,22 +7,22 @@ visibility: public
 contributions:
   commands:
     - id: hi-hat.get_reader
-      python_name: top_hat._reader:napari_get_reader
+      python_name: hi_hat._reader:napari_get_reader
       title: Open data with Hi-HAT
     - id: hi-hat.write_multiple
-      python_name: top_hat._writer:write_multiple
+      python_name: hi_hat._writer:write_multiple
       title: Save multi-layer data with Hi-HAT
     - id: hi-hat.write_single_image
-      python_name: top_hat._writer:write_single_image
+      python_name: hi_hat._writer:write_single_image
       title: Save image data with Hi-HAT
     - id: hi-hat.make_sample_data
-      python_name: top_hat._sample_data:make_sample_data
+      python_name: hi_hat._sample_data:make_sample_data
       title: Load sample data from Hi-HAT
-    - id: hi-hat.TopMatch
-      python_name: top_hat.top_match_widget:TopMatch
-      title: Top Match
+    - id: hi-hat.HiMatch
+      python_name: hi_hat.hi_match_widget:HiMatch
+      title: Hi Match
     - id: hi-hat.HatViewer
-      python_name: top_hat.hat_viewer_widget:HatViewer
+      python_name: hi_hat.hat_viewer_widget:HatViewer
       title: Hat Viewer
   readers:
     - command: hi-hat.get_reader
@@ -40,7 +40,7 @@ contributions:
       display_name: Hi-HAT
       key: unique_id.1
   widgets:
-    - command: hi-hat.TopMatch
-      display_name: Top Match
+    - command: hi-hat.HiMatch
+      display_name: Hi Match
     - command: hi-hat.HatViewer
       display_name: Hat Viewer

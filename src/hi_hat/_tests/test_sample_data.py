@@ -1,4 +1,4 @@
-# from top_hat import make_sample_data
+# from hi_hat import make_sample_data
 
 # add your tests here...
 

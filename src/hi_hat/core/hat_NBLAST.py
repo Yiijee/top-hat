@@ -1,5 +1,3 @@
-# src/top_hat/core/hat_NBLAST.py
-
 import navis
 
 

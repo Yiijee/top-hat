@@ -1,5 +1,3 @@
-# src/top_hat/core/voxel_counting.py
-
 import numpy as np
 
 

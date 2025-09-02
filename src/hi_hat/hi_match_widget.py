@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     import napari
 
 
-class TopMatch(QWidget):
+class HiMatch(QWidget):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
         self.viewer = viewer

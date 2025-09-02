@@ -1,46 +1,46 @@
-name: top-hat
-display_name: Top HAT
+name: hi-hat
+display_name: Hi-HAT
 # use 'hidden' to remove plugin from napari hub search results
 visibility: public
 # see https://napari.org/stable/plugins/technical_references/manifest.html#fields for valid categories
 # categories: []
 contributions:
   commands:
-    - id: top-hat.get_reader
+    - id: hi-hat.get_reader
       python_name: top_hat._reader:napari_get_reader
-      title: Open data with Top HAT
-    - id: top-hat.write_multiple
+      title: Open data with Hi-HAT
+    - id: hi-hat.write_multiple
       python_name: top_hat._writer:write_multiple
-      title: Save multi-layer data with Top HAT
-    - id: top-hat.write_single_image
+      title: Save multi-layer data with Hi-HAT
+    - id: hi-hat.write_single_image
       python_name: top_hat._writer:write_single_image
-      title: Save image data with Top HAT
-    - id: top-hat.make_sample_data
+      title: Save image data with Hi-HAT
+    - id: hi-hat.make_sample_data
       python_name: top_hat._sample_data:make_sample_data
-      title: Load sample data from Top HAT
-    - id: top-hat.TopMatch
+      title: Load sample data from Hi-HAT
+    - id: hi-hat.TopMatch
       python_name: top_hat.top_match_widget:TopMatch
       title: Top Match
-    - id: top-hat.HatViewer
+    - id: hi-hat.HatViewer
       python_name: top_hat.hat_viewer_widget:HatViewer
       title: Hat Viewer
   readers:
-    - command: top-hat.get_reader
+    - command: hi-hat.get_reader
       accepts_directories: false
       filename_patterns: ['*.nrrd', '*.tiff', '*.tif']
   writers:
-    - command: top-hat.write_multiple
+    - command: hi-hat.write_multiple
       layer_types: ['image*','labels*']
       filename_extensions: []
-    - command: top-hat.write_single_image
+    - command: hi-hat.write_single_image
       layer_types: ['image']
       filename_extensions: ['.npy']
   sample_data:
-    - command: top-hat.make_sample_data
-      display_name: Top HAT
+    - command: hi-hat.make_sample_data
+      display_name: Hi-HAT
       key: unique_id.1
   widgets:
-    - command: top-hat.TopMatch
+    - command: hi-hat.TopMatch
       display_name: Top Match
-    - command: top-hat.HatViewer
+    - command: hi-hat.HatViewer
       display_name: Hat Viewer

@@ -1,11 +1,11 @@
-# top-hat
+# Hi-HAT
 
-[![License MIT](https://img.shields.io/pypi/l/top-hat.svg?color=green)](https://github.com/Yiijee/top-hat/raw/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/top-hat.svg?color=green)](https://pypi.org/project/top-hat)
-[![Python Version](https://img.shields.io/pypi/pyversions/top-hat.svg?color=green)](https://python.org)
-[![tests](https://github.com/Yiijee/top-hat/workflows/tests/badge.svg)](https://github.com/Yiijee/top-hat/actions)
-[![codecov](https://codecov.io/gh/Yiijee/top-hat/branch/main/graph/badge.svg)](https://codecov.io/gh/Yiijee/top-hat)
-[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/top-hat)](https://napari-hub.org/plugins/top-hat)
+[![License MIT](https://img.shields.io/pypi/l/hi-hat.svg?color=green)](https://github.com/Yiijee/hi-hat/raw/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/hi-hat.svg?color=green)](https://pypi.org/project/hi-hat)
+[![Python Version](https://img.shields.io/pypi/pyversions/hi-hat.svg?color=green)](https://python.org)
+[![tests](https://github.com/Yiijee/hi-hat/workflows/tests/badge.svg)](https://github.com/Yiijee/hi-hat/actions)
+[![codecov](https://codecov.io/gh/Yiijee/hi-hat/branch/main/graph/badge.svg)](https://codecov.io/gh/Yiijee/hi-hat)
+[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/hi-hat)](https://napari-hub.org/plugins/hi-hat)
 [![npe2](https://img.shields.io/badge/plugin-npe2-blue?link=https://napari.org/stable/plugins/index.html)](https://napari.org/stable/plugins/index.html)
 [![Copier](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/copier-org/copier/master/img/badge/badge-grayscale-inverted-border-purple.json)](https://github.com/copier-org/copier)
 
@@ -44,7 +44,7 @@ Note: Old results CSV files may not be compatible with the new tool. Please rena
 
 ## Installation
 
-Currently, top-hat supports Python 3.10-3.12. Other versions might work but have not been tested.
+Currently, Hi-HAT supports Python 3.10-3.12. Other versions might work but have not been tested.
 Using this package in a virtual environment is recommended.
 Install [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/main) following their instructions.
 
@@ -58,13 +58,13 @@ conda activate <env_name>
 
 To install latest development version :
 ```
-pip install "git+https://github.com/Yiijee/top-hat.git#egg=top-hat[all]"
+pip install "git+https://github.com/Yiijee/hi-hat.git#egg=hi-hat[all]"
 ```
 
 To clone this repo and make edits:
 ```
-git clone https://github.com/Yiijee/top-hat.git
-cd top-hat
+git clone https://github.com/Yiijee/hi-hat.git
+cd hi-hat
 pip install -e ".[all]"
 ```
 
@@ -76,7 +76,7 @@ Open a terminal and run the following commands to start the GUI. Note that `<env
 conda activate <env_name>
 napari
 ```
-The napari user interface will appear. You can then navigate to **Plugins > Top HAT** to select either the `HAT viewer` or `top match` module.
+The napari user interface will appear. You can then navigate to **Plugins > Hi-HAT** to select either the `HAT viewer` or `top match` module.
 
 You can drag and drop a **single-channel, registered** .nrrd or .tif image into the user interface to open it.
 
@@ -104,7 +104,7 @@ the coverage at least stays the same before you submit a pull request.
 ## License
 
 Distributed under the terms of the [MIT] license,
-"top-hat" is free and open source software
+"Hi-HAT" is free and open source software
 
 ## Issues
 
@@ -121,7 +121,7 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 [Mozilla Public License 2.0]: https://www.mozilla.org/media/MPL/2.0/index.txt
 [napari-plugin-template]: https://github.com/napari/napari-plugin-template
 
-[file an issue]: https://github.com/Yiijee/top-hat/issues
+[file an issue]: https://github.com/Yiijee/hi-hat/issues
 
 [napari]: https://github.com/napari/napari
 [tox]: https://tox.readthedocs.io/en/latest/

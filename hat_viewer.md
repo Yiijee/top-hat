@@ -1,6 +1,6 @@
 # HAT Viewer Usage Guide
 
-This guide explains how to use the **HAT Viewer** module within the Top-hat plugin to explore and visualize hemilineage data. You can also use this tool to co-visualize hemilineage data with a registered light microscopy image.
+This guide explains how to use the **HAT Viewer** module within the Hi-HAT plugin to explore and visualize hemilineage data. You can also use this tool to co-visualize hemilineage data with a registered light microscopy image.
 
 ## Overview
 

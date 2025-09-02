@@ -1,6 +1,6 @@
 # Top Match Widget Usage Guide
 
-This guide explains how to use the **Top Match** module of Top HAT to interactively match hemilineages from a light microscopy image.
+This guide explains how to use the **Top Match** module of Hi-HAT to interactively match hemilineages from a light microscopy image.
 
 ## Overview
 

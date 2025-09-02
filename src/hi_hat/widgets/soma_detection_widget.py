@@ -17,11 +17,33 @@ if TYPE_CHECKING:
 
 
 class SomaDetectionWidget(QWidget):
-    """A widget for soma detection and centroid calculation."""
+    """A widget for soma detection and centroid calculation.
+
+    This widget allows users to select points in the napari viewer, calculate
+    their centroid, and then use that centroid to find matching hemilineages
+    based on soma proximity.
+
+    Attributes:
+        matched (Signal): A Qt signal that emits a list of matched hemilineage
+            names.
+        viewer (napari.viewer.Viewer): The napari viewer instance.
+        loader (FAFB_loader): An instance of the data loader.
+        results_df (pd.DataFrame): A DataFrame holding the matching results.
+        manual_centroid (tuple): The (z, y, x) coordinates of the last
+            calculated centroid.
+        last_matched_hemilineages (list[str]): A list of hemilineages from the
+            most recent soma matching operation.
+    """
 
     matched = Signal(list)
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """Initializes the SomaDetectionWidget.
+
+        Args:
+            viewer (napari.viewer.Viewer): The napari viewer instance.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.viewer = viewer
         self.loader = None
@@ -56,7 +78,7 @@ class SomaDetectionWidget(QWidget):
         self._update_enabled_state()
 
     def reset(self):
-        """Reset the widget to its initial state."""
+        """Resets the widget to its initial state for a new query."""
         if "Selected Points" in self.viewer.layers:
             self.viewer.layers["Selected Points"].data = []
         if "LM_centroid" in self.viewer.layers:
@@ -76,7 +98,7 @@ class SomaDetectionWidget(QWidget):
         )
 
     def _update_enabled_state(self):
-        """Enable/disable widget based on dependencies."""
+        """Enables or disables widget controls based on the current state."""
         binarized_image_exists = "binarized_image" in self.viewer.layers
         enabled = all(
             [
@@ -96,11 +118,16 @@ class SomaDetectionWidget(QWidget):
             )
 
     def _on_layers_changed(self):
-        """Respond to changes in viewer layers."""
+        """Responds to changes in napari viewer layers."""
         self._update_enabled_state()
 
     def _on_results_loaded(self, df, path):
-        """Handle loaded results, adding centroids to the viewer."""
+        """Handles loaded results, adding centroids to the viewer.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing the results.
+            path (str): The path to the file from which results were loaded.
+        """
         print("Results loaded is triggered for soma detection")
         self.results_df = df
         self._update_enabled_state()
@@ -132,19 +159,36 @@ class SomaDetectionWidget(QWidget):
                     )
 
     def set_loader(self, loader_instance):
-        """Set the data loader and enable the widget."""
+        """Sets the data loader instance.
+
+        Args:
+            loader_instance (FAFB_loader): The data loader to use.
+        """
         self.loader = loader_instance
         self._update_enabled_state()
 
     def _on_points_added(self, event):
-        """Update point labels when data changes."""
+        """Updates point labels when data changes in the points layer.
+
+        Args:
+            event (napari.utils.events.Event): The data change event.
+        """
         coords = self.points_layer.data
         labels = [str(i + 1) for i in range(len(coords))]
         self.points_layer.text = {"string": labels, "size": 7, "color": "red"}
         self.points_layer.size = 5
 
     def _calculate_centroid(self, indices):
-        """Return the centroid coordinates for selected indices."""
+        """Calculates the centroid for a given set of point indices.
+
+        Args:
+            indices (list[int]): A list of integer indices corresponding to
+                the points in the 'Selected Points' layer.
+
+        Returns:
+            tuple[float, float, float] | None: The (z, y, x) coordinates of
+                the centroid, or None if no valid points are found.
+        """
         coords = self.points_layer.data
         if len(coords) == 0 or not indices:
             return None
@@ -152,7 +196,7 @@ class SomaDetectionWidget(QWidget):
         return tuple(float(c) for c in selected_coords.mean(axis=0))
 
     def _get_cluster_centroid(self):
-        """Get point indices from user, calculate centroid, and run matching."""
+        """Gets point indices from the user, calculates the centroid, and runs matching."""
         if self.loader is None:
             show_warning("Please connect to a dataset first.")
             return
@@ -209,7 +253,13 @@ class SomaDetectionWidget(QWidget):
         #     show_error(f"An error occurred: {e}")
 
     def _update_viewer_with_centroid(self, centroid):
-        """Add or update the centroid point layer in the viewer."""
+        """Adds or updates the centroid point layer in the viewer.
+
+        Also adds the mirrored centroid.
+
+        Args:
+            centroid (tuple): The (z, y, x) coordinates of the centroid.
+        """
         mirrored_centroid = _JRC2018U_mirror(centroid[::-1])[::-1]
         points_to_add = [centroid, mirrored_centroid]
 

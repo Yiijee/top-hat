@@ -21,11 +21,25 @@ if TYPE_CHECKING:
 
 
 class ConnectionWidget(QWidget):
-    """A widget to handle FAFB dataset connection."""
+    """A widget for connecting to the FAFB dataset.
+
+    This widget provides a user interface for specifying the path to the
+    FAFB dataset, connecting to it, and validating its contents. It emits a
+    signal when a connection is successfully established or fails.
+
+    Attributes:
+        connected (Signal): A Qt signal that emits the `FAFB_loader` instance
+            on successful connection, or `None` on failure.
+    """
 
     connected = Signal(object)
 
     def __init__(self, parent=None):
+        """Initializes the ConnectionWidget.
+
+        Args:
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.loader = None
         self.setLayout(QVBoxLayout())
@@ -51,7 +65,7 @@ class ConnectionWidget(QWidget):
         self._load_settings()
 
     def _load_settings(self):
-        """Load the last used data path from settings."""
+        """Loads the last used data path from application settings."""
         settings = QSettings("hi-hat", "hat-viewer")
         last_path = settings.value("data_path", "")
         if last_path:
@@ -59,12 +73,17 @@ class ConnectionWidget(QWidget):
             self.status_label.setText("Status: Path loaded. Click connect.")
 
     def _save_settings(self):
-        """Save the current data path to settings."""
+        """Saves the current data path to application settings."""
         settings = QSettings("hi-hat", "hat-viewer")
         settings.setValue("data_path", self.path_edit.text())
 
     def _on_connect(self):
-        """Connect to the FAFB dataset path."""
+        """Handles the 'Connect' button click.
+
+        Attempts to create and validate a `FAFB_loader` instance with the
+        provided path. Emits the `connected` signal with the loader instance
+        on success or `None` on failure.
+        """
         path = self.path_edit.text()
         if not path:
             show_warning("Please provide a path.")
@@ -87,7 +106,7 @@ class ConnectionWidget(QWidget):
             self.connected.emit(None)
 
     def _on_browse(self):
-        """Open a dialog to select the data directory."""
+        """Opens a file dialog to select the data directory."""
         path = QFileDialog.getExistingDirectory(
             self, "Select FAFB Dataset Directory"
         )

@@ -18,21 +18,17 @@ if TYPE_CHECKING:
 
 
 def write_single_image(path: str, data: Any, meta: dict) -> list[str]:
-    """Writes a single image layer.
+    """Writes a single image layer to a file.
 
-    Parameters
-    ----------
-    path : str
-        A string path indicating where to save the image file.
-    data : The layer data
-        The `.data` attribute from the napari layer.
-    meta : dict
-        A dictionary containing all other attributes from the napari layer
-        (excluding the `.data` layer attribute).
+    Args:
+        path (str): A string path indicating where to save the image file.
+        data (Any): The layer data, corresponding to the `.data` attribute
+            from a napari layer.
+        meta (dict): A dictionary containing all other attributes from the
+            napari layer (excluding the `.data` attribute).
 
-    Returns
-    -------
-    [path] : A list containing the string path to the saved file.
+    Returns:
+        list[str]: A list containing the string path to the saved file.
     """
 
     # implement your writer logic here ...
@@ -42,22 +38,20 @@ def write_single_image(path: str, data: Any, meta: dict) -> list[str]:
 
 
 def write_multiple(path: str, data: list[FullLayerData]) -> list[str]:
-    """Writes multiple layers of different types.
+    """Writes multiple layers of different types to a file.
 
-    Parameters
-    ----------
-    path : str
-        A string path indicating where to save the data file(s).
-    data : A list of layer tuples.
-        Tuples contain three elements: (data, meta, layer_type)
-        `data` is the layer data
-        `meta` is a dictionary containing all other metadata attributes
-        from the napari layer (excluding the `.data` layer attribute).
-        `layer_type` is a string, eg: "image", "labels", "surface", etc.
+    Args:
+        path (str): A string path indicating where to save the data file(s).
+        data (list[FullLayerData]): A list of layer tuples. Each tuple
+            contains three elements: (data, meta, layer_type).
+            - `data`: The layer data.
+            - `meta`: A dictionary containing all other metadata attributes
+              from the napari layer (excluding the `.data` attribute).
+            - `layer_type`: A string indicating the layer type (e.g.,
+              "image", "labels", "surface").
 
-    Returns
-    -------
-    [path] : A list containing (potentially multiple) string paths to the saved file(s).
+    Returns:
+        list[str]: A list containing paths to the saved file(s).
     """
 
     # implement your writer logic here ...

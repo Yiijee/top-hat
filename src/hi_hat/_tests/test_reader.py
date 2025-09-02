@@ -3,7 +3,11 @@ from hi_hat import napari_get_reader
 
 # tmp_path is a pytest fixture
 def test_reader(tmp_path):
-    pass
+    """Tests the reader function.
+
+    Args:
+        tmp_path (py.path.local): A pytest fixture for a temporary directory.
+    """
     # """An example of how you might test your plugin."""
 
     # # write some fake data using your supported file format
@@ -27,5 +31,6 @@ def test_reader(tmp_path):
 
 
 def test_get_reader_pass():
+    """Tests that the reader returns None for unsupported file types."""
     reader = napari_get_reader("fake.file")
     assert reader is None

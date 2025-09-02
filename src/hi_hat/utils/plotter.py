@@ -11,11 +11,21 @@ def plot_tracts(
     plot_symmetry: bool = False,
     progress_wrapper: any = None,
 ):
-    """
-    A placeholder function to save information for plotting tracts.
+    """Plots hemilineage tracts and saves the figure to a file.
 
-    The input is a dictionary of active hemilineages and their associated colors.
+    This function generates a 2D plot of specified hemilineage tracts,
+    optionally including their symmetric counterparts, overlaid on a brain mesh.
 
+    Args:
+        active_hemilineages (dict[str, str]): A dictionary where keys are
+            hemilineage names and values are their corresponding hex color codes.
+        output_path (Path): The file path where the output plot image will be saved.
+        loader (any): An instance of a data loader class that provides access
+            to hemilineage data and brain meshes.
+        plot_symmetry (bool, optional): If True, plots the symmetrized version
+            of the tracts. Defaults to False.
+        progress_wrapper (any, optional): A wrapper function (like tqdm) to
+            provide progress updates for the plotting process. Defaults to None.
     """
     iterable = active_hemilineages.items()
     JRC2018U_mesh = loader.get_JRC2018U_mesh()

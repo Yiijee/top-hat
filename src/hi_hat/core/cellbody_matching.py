@@ -2,13 +2,45 @@ import numpy as np
 
 
 def _JRC2018U_mirror(pt):
-    """Mirror a point across the midline. Assuming pt is a 3D point (x, y, z)."""
+    """Mirrors a 3D point across the JRC2018U template's midline.
+
+    Args:
+        pt (np.ndarray): A 3D point coordinate (x, y, z).
+
+    Returns:
+        np.ndarray: The mirrored 3D point coordinate.
+    """
     return np.array([627 - pt[0], pt[1], pt[2]])
 
 
 def centroid_matching(user_centroid, loader):
-    """Match a user-provided centroid to the closest hemilineages
-    based on their centroids."""
+    """Finds the closest hemilineages to a user-provided centroid.
+
+    This function calculates the Euclidean distance from a user-specified 3D
+    point to the pre-calculated centroids of all hemilineages. It considers
+    both the original point and its mirrored version across the brain's
+    midline to account for bilateral symmetry. A match is considered valid if
+    the distance is within three times the Root Sum of Squares of Error (RMSE)
+    of the hemilineage's own cell body distribution.
+
+    Args:
+        user_centroid (tuple or np.ndarray): The (x, y, z) coordinates of the
+            point selected by the user.
+        loader (object): An instance of a data loader class that provides
+            access to the hemilineage soma data via a `get_somas()` method.
+
+    Returns:
+        dict: A dictionary containing the user's centroid and a list of
+            matching hemilineage names, sorted by distance. For example:
+            {
+                'user_centroid': (123.4, 567.8, 90.1),
+                'hemilineages': ['hemilineage_A', 'hemilineage_B']
+            }
+
+    Raises:
+        ValueError: If the DataFrame returned by the loader does not contain
+            the required columns.
+    """
 
     df = loader.get_somas()
     print("successfully loaded somas")

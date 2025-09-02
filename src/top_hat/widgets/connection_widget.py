@@ -52,7 +52,7 @@ class ConnectionWidget(QWidget):
 
     def _load_settings(self):
         """Load the last used data path from settings."""
-        settings = QSettings("top-hat", "hat-viewer")
+        settings = QSettings("hi-hat", "hat-viewer")
         last_path = settings.value("data_path", "")
         if last_path:
             self.path_edit.setText(last_path)
@@ -60,7 +60,7 @@ class ConnectionWidget(QWidget):
 
     def _save_settings(self):
         """Save the current data path to settings."""
-        settings = QSettings("top-hat", "hat-viewer")
+        settings = QSettings("hi-hat", "hat-viewer")
         settings.setValue("data_path", self.path_edit.text())
 
     def _on_connect(self):

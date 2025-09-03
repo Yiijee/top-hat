@@ -1,5 +1,5 @@
 [project]
-name = "top-hat"
+name = "hi-hat"
 dynamic = ["version"]
 description = "Mapping hemilineage associate tracts in light microscopy images"
 readme = "README.md"
@@ -42,7 +42,7 @@ dependencies = [
 
 [project.optional-dependencies]
 # Allow easily installation with the full, default napari installation
-# (including Qt backend) using top-hat[all].
+# (including Qt backend) using hi-hat[all].
 all = ["napari[all]"]
 testing = [
     "tox",
@@ -53,13 +53,13 @@ testing = [
 ]
 
 [project.entry-points."napari.manifest"]
-top-hat = "top_hat:napari.yaml"
+hi-hat = "hi_hat:napari.yaml"
 
 [project.urls]
-"Bug Tracker" = "https://github.com/Yiijee/top-hat/issues"
-"Documentation" = "https://github.com/Yiijee/top-hat#README.md"
-"Source Code" = "https://github.com/Yiijee/top-hat"
-"User Support" = "https://github.com/Yiijee/top-hat/issues"
+"Bug Tracker" = "https://github.com/Yiijee/hi-hat/issues"
+"Documentation" = "https://github.com/Yiijee/hi-hat#README.md"
+"Source Code" = "https://github.com/Yiijee/hi-hat"
+"User Support" = "https://github.com/Yiijee/hi-hat/issues"
 
 [build-system]
 requires = ["setuptools>=42.0.0", "wheel", "setuptools_scm"]
@@ -75,7 +75,7 @@ where = ["src"]
 "*" = ["*.yaml"]
 
 [tool.setuptools_scm]
-write_to = "src/top_hat/_version.py"
+write_to = "src/hi_hat/_version.py"
 fallback_version = "0.0.1+nogit"
 
 [tool.black]

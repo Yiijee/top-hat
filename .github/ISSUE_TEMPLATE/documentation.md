@@ -1,6 +1,6 @@
 ---
 name: "\U0001F4DA Documentation"
-about: Report an issue with top-hat documentation
+about: Report an issue with Hi-HAT documentation
 title: ''
 labels: documentation
 assignees: ''

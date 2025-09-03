@@ -2,8 +2,7 @@ import random
 
 
 def generate_random_hex_color() -> str:
-    """
-    Generates a random 6-digit hex color code.
+    """Generates a random 6-digit hex color code.
 
     Returns:
         str: A hex color string, e.g., '#RRGGBB'.

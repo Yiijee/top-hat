@@ -19,11 +19,31 @@ if TYPE_CHECKING:
 
 
 class ResultsLoaderWidget(QWidget):
-    """A widget to load and manage matching results."""
+    """A widget for loading and managing matching results from CSV files.
+
+    This widget automatically detects the `query_image` layer in napari,
+    finds an associated `_results.csv` file, and loads it. It also provides
+    manual controls for browsing and loading other result files. It ensures
+    that the loaded data is consistent with the available hemilineages.
+
+    Attributes:
+        results_loaded (Signal): A Qt signal that emits a pandas DataFrame
+            and the file path (str) when results are loaded or created.
+        viewer (napari.viewer.Viewer): The napari viewer instance.
+        loader (FAFB_loader): An instance of the data loader.
+        results_df (pd.DataFrame): The currently loaded results.
+        results_path (str): The path to the current results file.
+    """
 
     results_loaded = Signal(object, str)  # Emits DataFrame and file path
 
     def __init__(self, viewer: "napari.viewer.Viewer", parent=None):
+        """Initializes the ResultsLoaderWidget.
+
+        Args:
+            viewer (napari.viewer.Viewer): The napari viewer instance.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.viewer = viewer
         self.loader = None
@@ -70,7 +90,7 @@ class ResultsLoaderWidget(QWidget):
         self.viewer.layers.events.removed.connect(self._on_layers_changed)
 
     def reset(self):
-        """Reset the widget to its initial state."""
+        """Resets the widget to its initial state."""
         self.path_edit.clear()
         self.status_label.setText("Status: Initializing...")
         self.results_df = None
@@ -78,12 +98,16 @@ class ResultsLoaderWidget(QWidget):
         self._on_layers_changed()
 
     def set_loader(self, loader_instance):
-        """Set the data loader."""
+        """Sets the data loader instance.
+
+        Args:
+            loader_instance (FAFB_loader): The data loader to use.
+        """
         self.loader = loader_instance
 
     def perform_initial_load(self):
-        """
-        Perform the initial check for a query_image and load its results.
+        """Performs the initial check for a query image and loads its results.
+
         This should be called after all signal/slot connections are established.
         """
         # --- Initial State ---
@@ -95,9 +119,11 @@ class ResultsLoaderWidget(QWidget):
         self._on_layers_changed()
 
     def _on_layers_changed(self, event=None):
-        """
-        Monitors layer changes to automatically find and load
-        a corresponding results file.
+        """Monitors layer changes to automatically load associated results.
+
+        Args:
+            event (napari.utils.events.Event, optional): The layer change
+                event. Defaults to None.
         """
         print("Results loader: Layer changed detected...")
         try:
@@ -122,10 +148,15 @@ class ResultsLoaderWidget(QWidget):
             self._create_empty_df(update_status=True)
 
     def _load_file(self, path: Path, is_manual_load: bool):
-        """
-        Load and validate a CSV file.
-        - For auto-load, it sets the default save path even if the file doesn't exist.
-        - For manual-load, it only loads if the file exists and is valid.
+        """Loads and validates a CSV file.
+
+        For automatic loading, it sets the default save path even if the file
+        doesn't exist. For manual loading, it only proceeds if the file
+        exists and is valid.
+
+        Args:
+            path (Path): The path to the CSV file.
+            is_manual_load (bool): True if the load was triggered by user action.
         """
         print(f"Results loader: Attempting to load file from {path}")
         final_df = None
@@ -218,8 +249,15 @@ class ResultsLoaderWidget(QWidget):
     def _create_empty_df(
         self, default_save_path=None, update_status=False, emit_signal=True
     ):
-        """
-        Create a DataFrame with all hemilineages, initializing columns.
+        """Creates a DataFrame with all hemilineages and initializes columns.
+
+        Args:
+            default_save_path (str, optional): The default path to save results.
+                Defaults to None.
+            update_status (bool, optional): If True, updates the status label.
+                Defaults to False.
+            emit_signal (bool, optional): If True, emits the `results_loaded`
+                signal. Defaults to True.
         """
         if self.loader:
             hemilineages = self.loader.hemilineage_list
@@ -242,11 +280,15 @@ class ResultsLoaderWidget(QWidget):
             self.results_loaded.emit(self.results_df, self.results_path)
 
     def _update_status(self, message: str):
-        """Updates the status label."""
+        """Updates the status label with a given message.
+
+        Args:
+            message (str): The message to display.
+        """
         self.status_label.setText(f"Status: {message}")
 
     def _on_browse(self):
-        """Open a file dialog to select a results file."""
+        """Opens a file dialog to select a results CSV file."""
         default_dir = ""
         try:
             query_layer = self.viewer.layers["query_image"]
@@ -264,7 +306,7 @@ class ResultsLoaderWidget(QWidget):
             self._on_load()
 
     def _on_load(self):
-        """Load the file specified in the path edit box (manual override)."""
+        """Loads the file specified in the path edit box (manual override)."""
         path_str = self.path_edit.text()
         if path_str:
             self._load_file(Path(path_str), is_manual_load=True)
@@ -273,9 +315,17 @@ class ResultsLoaderWidget(QWidget):
             self._update_status("Specify a file path to manually load.")
 
     def get_results_df(self):
-        """Return the currently loaded DataFrame."""
+        """Returns the currently loaded DataFrame.
+
+        Returns:
+            pd.DataFrame: The current results DataFrame.
+        """
         return self.results_df
 
     def get_results_path(self):
-        """Return the path of the loaded results file."""
+        """Returns the path of the loaded results file.
+
+        Returns:
+            str: The path to the current results file.
+        """
         return self.results_path

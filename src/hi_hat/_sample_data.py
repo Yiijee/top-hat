@@ -13,7 +13,11 @@ import numpy
 
 
 def make_sample_data():
-    """Generates an image"""
+    """Generates a sample image.
+
+    Returns:
+        list[tuple]: A list containing a tuple with sample data and metadata.
+    """
     # Return list of tuples
     # [(data1, add_image_kwargs1), (data2, add_image_kwargs2)]
     # Check the documentation for more information about the

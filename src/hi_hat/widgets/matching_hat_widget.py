@@ -29,7 +29,22 @@ if TYPE_CHECKING:
 
 
 class MatchingHatWidget(QWidget):
-    """A widget for matching query images with hemilineage templates."""
+    """A widget for matching query images with hemilineage templates.
+
+    This widget provides controls for running voxel counting and NBLAST matching
+    between a binarized query image and a set of hemilineage templates.
+    It displays the results in a table and allows for updating the napari viewer
+    with selected hemilineage data.
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The napari viewer instance.
+        soma_detection_widget (SomaDetectionWidget): The widget for soma detection.
+        loader (FAFB_loader): An instance of the data loader.
+        results_df (pd.DataFrame): A DataFrame holding the matching results.
+        results_path (str): The path to the CSV file where results are stored.
+        last_matched_hemilineages (list[str]): A list of hemilineages from the
+            most recent match operation.
+    """
 
     def __init__(
         self,
@@ -37,6 +52,14 @@ class MatchingHatWidget(QWidget):
         soma_detection_widget: "SomaDetectionWidget",
         parent=None,
     ):
+        """Initializes the MatchingHatWidget.
+
+        Args:
+            viewer (napari.viewer.Viewer): The napari viewer instance.
+            soma_detection_widget (SomaDetectionWidget): The widget for soma
+                detection, used to get the query centroid.
+            parent (QWidget, optional): The parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.viewer = viewer
         self.soma_detection_widget = soma_detection_widget
@@ -107,7 +130,7 @@ class MatchingHatWidget(QWidget):
         self._update_enabled_state()
 
     def reset(self):
-        """Reset the widget for a new query image."""
+        """Resets the widget to its initial state for a new query."""
         self.hemilineage_input.clear()
         self.last_matched_hemilineages = []
         self.show_recent_only_checkbox.setChecked(False)
@@ -116,7 +139,7 @@ class MatchingHatWidget(QWidget):
         self._populate_table()
 
     def _update_enabled_state(self):
-        """Enable/disable widget based on dependencies."""
+        """Enables or disables widget controls based on the current state."""
         binarized_image_exists = "binarized_image" in self.viewer.layers
         enabled = all(
             [
@@ -134,28 +157,33 @@ class MatchingHatWidget(QWidget):
         )
 
     def _on_layers_changed(self, event):
-        """Respond to changes in viewer layers."""
+        """Responds to changes in napari viewer layers."""
         self._update_enabled_state()
 
     def set_loader(self, loader_instance):
-        """Set the data loader."""
+        """Sets the data loader instance.
+
+        Args:
+            loader_instance (FAFB_loader): The data loader to use.
+        """
         self.loader = loader_instance
         self._update_enabled_state()
 
     def set_hemilineages(self, hemilineages):
-        """Set the hemilineage input text."""
+        """Populates the hemilineage input text area.
+
+        Args:
+            hemilineages (list[str]): A list of hemilineage names.
+        """
         self.hemilineage_input.setText("\n".join(hemilineages))
 
     def _on_display_toggle(self):
-        """Handle the toggle switch for the results display."""
+        """Handles toggling the display of recent results."""
         self._on_save()
         self._populate_table()
 
     def _on_save(self):
-        """
-        Update the results DataFrame with the current statuses from the table
-        and save it to the CSV file.
-        """
+        """Saves the current results table to the CSV file."""
         if self.results_path is None or self.results_df is None:
             show_warning("No results file available to save.")
             return
@@ -182,6 +210,12 @@ class MatchingHatWidget(QWidget):
             show_error(f"Failed to save results: {e}")
 
     def _on_results_loaded(self, results_df, results_path):
+        """Handles loading of results from a file.
+
+        Args:
+            results_df (pd.DataFrame): The DataFrame containing the results.
+            results_path (str): The path to the file from which results were loaded.
+        """
         self.results_df = results_df
         self.results_path = results_path
         self.last_matched_hemilineages = []
@@ -190,6 +224,11 @@ class MatchingHatWidget(QWidget):
         self._populate_table()
 
     def _on_match(self, progress):
+        """Initiates the matching process when the 'Match' button is clicked.
+
+        Args:
+            progress (callable): A progress reporting callable, e.g., from napari.
+        """
         if self.loader is None:
             show_warning("Please connect to a dataset first.")
             return
@@ -306,7 +345,7 @@ class MatchingHatWidget(QWidget):
         self._populate_table()
 
     def _populate_table(self):
-        """Fill the results table from the results DataFrame."""
+        """Fills the results table from the results DataFrame."""
         self.results_table.setSortingEnabled(False)
         self.results_table.setRowCount(0)
 
@@ -381,7 +420,7 @@ class MatchingHatWidget(QWidget):
         self.results_table.resizeColumnsToContents()
 
     def _on_update_display(self):
-        """Load selected tracts and neurons into the viewer."""
+        """Loads selected tracts and neurons into the napari viewer."""
         if not self.loader:
             show_warning("Data loader not available.")
             return

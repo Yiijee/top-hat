@@ -11,15 +11,21 @@ import pandas as pd
 
 
 class FAFB_loader:
-    """
-    A class to handle loading FAFB hemilineage data from a specified
-    directory, validating its integrity, and providing methods to access
-    the data.
+    """Handles loading FAFB hemilineage data from a directory.
+
+    This class validates the integrity of the dataset and provides methods
+    to access different data components, such as neuron skeletons, voxel masks,
+    and NBLAST dotprops.
+
+    Attributes:
+        fafb_root (Path): The root directory of the FAFB dataset.
+        hemilineage_list (list[str]): A list of hemilineage names.
+        hemilineage_df (pd.DataFrame): A DataFrame containing summary
+            information about the hemilineages.
     """
 
     def __init__(self, path: str, hemilineage_number: int = 197):
-        """
-        Initializes the loader and validates the data path.
+        """Initializes the loader and validates the data path.
 
         Args:
             path (str): The root path of the FAFB dataset.
@@ -31,8 +37,16 @@ class FAFB_loader:
         self.hemilineage_df: pd.DataFrame = pd.DataFrame()
 
     def _read_hemilineage_list(self, hemilineage_number: int):
-        """
-        Reads the hemilineage list from the summary CSV.
+        """Reads the hemilineage list from the summary CSV.
+
+        Args:
+            hemilineage_number (int): The expected number of hemilineages.
+
+        Raises:
+            FileNotFoundError: If the root path or summary CSV does not exist.
+            NotADirectoryError: If the root path is not a directory.
+            ValueError: If the number of found hemilineages does not match
+                the expected number.
         """
         if not self.fafb_root.exists():
             raise FileNotFoundError(f"Path {self.fafb_root} does not exist.")
@@ -59,19 +73,28 @@ class FAFB_loader:
             )
 
     def get_somas(self) -> pd.DataFrame:
-        """
-        Get the somas data for all hemilineages.
+        """Gets the somas data for all hemilineages.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing soma information.
         """
         hemilineage_csv = self.fafb_root / "hemilineage_summary.csv"
         self.hemilineage_df = pd.read_csv(hemilineage_csv)
         return self.hemilineage_df
 
     def validate_dataset(self, progress_wrapper=None):
-        """
-        Check if the given path exists and if the dataset is complete.
+        """Checks if the dataset is complete by verifying required files.
 
         Args:
-            progress_wrapper: A function like napari.utils.progress to wrap the iterator.
+            progress_wrapper (callable, optional): A function like
+                `napari.utils.progress` to wrap the iterator for progress
+                tracking. Defaults to None.
+
+        Returns:
+            bool: True if all required files are found.
+
+        Raises:
+            FileNotFoundError: If a required file is missing.
         """
         suffixes = [
             "_registered_meshes.nrrd",  # whole neuron voxels
@@ -99,9 +122,14 @@ class FAFB_loader:
         print(f"All required files found in {self.fafb_root}.")
         return True
 
-    def get_JRC2018U_mesh(self) -> any:
-        """
-        Get the JRC2018U mesh data for plotting
+    def get_JRC2018U_mesh(self) -> Any:
+        """Gets the JRC2018U brain mesh for plotting.
+
+        Returns:
+            Any: The loaded JRC2018U mesh data, typically a pickled object.
+
+        Raises:
+            FileNotFoundError: If the mesh file is not found.
         """
         JRC2018U_path = self.fafb_root / "flybrains.JRC2018U.mesh.pkl"
         if not JRC2018U_path.exists():
@@ -112,17 +140,15 @@ class FAFB_loader:
             return pickle.load(f)
 
     def get_hemilineage_list(self) -> list[str]:
-        """
-        Get the list of available hemilineages.
+        """Gets the list of available hemilineages.
 
         Returns:
-            List[str]: A list of hemilineage identifier strings.
+            list[str]: A list of hemilineage identifier strings.
         """
         return self.hemilineage_list
 
     def _get_data(self, hemilineage: str, suffix: str, file_type: str) -> Any:
-        """
-        A private helper to load data files securely.
+        """A private helper to load data files securely.
 
         Args:
             hemilineage (str): The identifier for the hemilineage.
@@ -131,6 +157,10 @@ class FAFB_loader:
 
         Returns:
             Any: The loaded data, either a NumPy array or a pickled object.
+
+        Raises:
+            ValueError: If the hemilineage is not found or file type is unsupported.
+            FileNotFoundError: If the required data file is not found.
         """
         if hemilineage not in self.hemilineage_list:
             raise ValueError(
@@ -152,8 +182,7 @@ class FAFB_loader:
             raise ValueError(f"Unsupported file type: {file_type}")
 
     def get_whole_neuron_nrrd(self, hemilineage: str) -> npt.NDArray[Any]:
-        """
-        Get the whole neuron NRRD file for a specific hemilineage.
+        """Gets the whole neuron NRRD file for a specific hemilineage.
 
         Args:
             hemilineage (str): The identifier for the hemilineage.
@@ -164,8 +193,7 @@ class FAFB_loader:
         return self._get_data(hemilineage, "_registered_meshes.nrrd", "nrrd")
 
     def get_cellbody_fiber_nrrd(self, hemilineage: str) -> npt.NDArray[Any]:
-        """
-        Get the cell body fiber NRRD file for a specific hemilineage.
+        """Gets the cell body fiber NRRD file for a specific hemilineage.
 
         Args:
             hemilineage (str): The identifier for the hemilineage.
@@ -178,8 +206,7 @@ class FAFB_loader:
         )
 
     def get_hat_bundles_nrrd(self, hemilineage: str) -> npt.NDArray[Any]:
-        """
-        Get the hat bundles NRRD file for a specific hemilineage.
+        """Gets the hat bundles NRRD file for a specific hemilineage.
 
         Args:
             hemilineage (str): The identifier for the hemilineage.
@@ -192,15 +219,15 @@ class FAFB_loader:
     def get_hat_bundles_dps(
         self, hemilineage: str, symmetry: bool = False
     ) -> Any:
-        """
-        Get the hat bundles dot probabilities for a specific hemilineage.
+        """Gets the hat bundles dotprops for a specific hemilineage.
 
         Args:
             hemilineage (str): The identifier for the hemilineage.
-            symmetry (bool): The symmetry option for the dot probabilities.
+            symmetry (bool): If True, loads the symmetrized dotprops.
+                Defaults to False.
 
         Returns:
-            Any: a navis.dotprob neuron
+            Any: A navis `Dotprops` object representing the neuron skeleton.
         """
         if not symmetry:
             return self._get_data(hemilineage, "_hat_bundles.pkl", "pkl")

@@ -25,11 +25,26 @@ if TYPE_CHECKING:
 
 
 class HatViewer(QWidget):
-    """
-    A napari widget for loading and visualizing FAFB hemilineage data.
+    """A napari widget for loading and visualizing FAFB hemilineage data.
+
+    This widget provides an interface to connect to a FAFB dataset,
+    filter hemilineages by status, search for them, and add their
+    corresponding data (whole neuron, cell body fiber, or bundles)
+    as layers to the napari viewer. It also allows for plotting tracts.
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The napari viewer instance.
+        loader (FAFB_loader): An instance of the data loader.
+        results_df (pd.DataFrame): A DataFrame holding the matching results.
+        added_layers (list): A list of napari layers added by this widget.
     """
 
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        """Initializes the HatViewer widget.
+
+        Args:
+            viewer (napari.viewer.Viewer): The napari viewer instance.
+        """
         super().__init__()
         self.viewer = viewer
         self.loader = None
@@ -107,8 +122,11 @@ class HatViewer(QWidget):
         self.results_loader_widget.perform_initial_load()
 
     def _on_results_loaded(self, df, path):
-        """
-        Callback for when results are loaded from the file.
+        """Callback for when results are loaded from the file.
+
+        Args:
+            df (pd.DataFrame): The loaded DataFrame.
+            path (str): The path of the loaded file.
         """
         self.results_df = df
         print(self.results_df)
@@ -125,14 +143,18 @@ class HatViewer(QWidget):
         self._update_hemilineage_list()
 
     def _on_connection_status_changed(self, loader_instance):
+        """Callback for when the connection status changes.
+
+        Args:
+            loader_instance (FAFB_loader or None): The loader instance if
+                connection was successful, otherwise None.
+        """
         self.loader = loader_instance
         if self.loader:
             self._update_hemilineage_list()
 
     def _update_hemilineage_list(self):
-        """
-        Update the list of hemilineages based on search text and status filter.
-        """
+        """Updates the list of hemilineages based on search and filter criteria."""
         self.hemilineage_list_widget.clear()
         if not self.loader:
             return
@@ -168,7 +190,7 @@ class HatViewer(QWidget):
             self.hemilineage_list_widget.addItem(QListWidgetItem(name))
 
     def _on_add_layers(self):
-        """Add selected hemilineages as new layers to the viewer."""
+        """Adds selected hemilineages as new layers to the viewer."""
         if not self.loader:
             show_warning("Please connect to a dataset first.")
             return
@@ -209,7 +231,7 @@ class HatViewer(QWidget):
                 show_error(f"Failed to load {hemilineage_name}: {e}")
 
     def _on_clean_all(self):
-        """Remove all layers added by this widget."""
+        """Removes all layers added by this widget from the viewer."""
         for layer in self.added_layers:
             if layer in self.viewer.layers:
                 self.viewer.layers.remove(layer)
@@ -217,7 +239,7 @@ class HatViewer(QWidget):
         show_info("Removed all added layers.")
 
     def _on_plot_tracts(self):
-        """Placeholder for plotting tracts."""
+        """Opens a dialog to save a plot of the currently added tracts."""
         if not self.added_layers:
             show_warning("No layers have been added to plot.")
             return

@@ -14,8 +14,28 @@ if TYPE_CHECKING:
     import napari
 
 
-class TopMatch(QWidget):
+class HiMatch(QWidget):
+    """The main widget for the Hi-HAT napari plugin.
+
+    This widget integrates all the other widgets into a single interface
+    for connecting to data, loading results, thresholding images, detecting
+    somas, and matching hemilineages.
+
+    Attributes:
+        viewer (napari.viewer.Viewer): The napari viewer instance.
+        connection_widget (ConnectionWidget): Widget for data connection.
+        results_loader_widget (ResultsLoaderWidget): Widget for loading results.
+        threshold_widget (ThresholdWidget): Widget for image thresholding.
+        soma_detection_widget (SomaDetectionWidget): Widget for soma detection.
+        matching_hat_widget (MatchingHatWidget): Widget for hemilineage matching.
+    """
+
     def __init__(self, viewer: "napari.viewer.Viewer"):
+        """Initializes the HiMatch widget.
+
+        Args:
+            viewer (napari.viewer.Viewer): The napari viewer instance.
+        """
         super().__init__()
         self.viewer = viewer
         self.setLayout(QVBoxLayout())
@@ -73,9 +93,10 @@ class TopMatch(QWidget):
         self.results_loader_widget.perform_initial_load()
 
     def _on_new_query_image(self, event):
-        """
-        A new layer has been inserted. If it's a new 'query_image',
-        reset the application state.
+        """Resets the application state when a new query image is added.
+
+        Args:
+            event (napari.utils.events.Event): The layer insertion event.
         """
         layer = event.value
         if layer.name == "query_image [1]":

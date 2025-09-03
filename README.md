@@ -15,7 +15,7 @@ This tool is still under development and is currently only available for Clowney
 
 ----------------------------------
 
-This [napari] plugin was generated with [copier] using the [napari-plugin-template].
+This [napari](https://github.com/napari/napari) plugin was generated with [copier](https://copier.readthedocs.io/en/stable/) using the [napari-plugin-template](https://github.com/napari/napari-plugin-template).
 
 <!--
 Don't miss the full getting started guide to set up your new package:

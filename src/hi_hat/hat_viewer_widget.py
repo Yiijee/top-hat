@@ -200,10 +200,10 @@ class HatViewer(QWidget):
             show_warning("No hemilineages selected.")
             return
 
+        hemilineage_names = [item.text() for item in selected_items]
         data_type = self.data_type_combo.currentText()
 
-        for item in selected_items:
-            hemilineage_name = item.text()
+        for hemilineage_name in hemilineage_names:
             try:
                 if data_type == "Whole neuron":
                     data = self.loader.get_whole_neuron_nrrd(hemilineage_name)
